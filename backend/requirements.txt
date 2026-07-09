@@ -4,3 +4,8 @@ supabase
 python-dotenv
 pydantic
 python-multipart
+pytesseract
+Pillow
+pdfplumber
+groq
+
