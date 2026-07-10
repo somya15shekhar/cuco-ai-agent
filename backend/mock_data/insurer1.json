@@ -1,0 +1,187 @@
+{
+  "insurer": "Insurer1",
+  "plan_name": "SecureHealth Premier",
+  "plan_id": "planA",
+  "sum_insured": 1000000,
+  "policy_term_years": 1,
+
+  "annual_deductible": {
+    "value_inr": 50000,
+    "type": "aggregate_voluntary",
+    "notes": "Voluntary aggregate deductible of ₹50,000 per policy year. Policyholder pays all claims until this threshold is met; insurer covers admissible claims above it. Opting this deductible reduces annual premium by approximately 30-40%. Deductible does not reduce the sum insured.",
+    "source": "HDFC ERGO Optima Secure policy wording, Section B-2.7 Aggregate Deductible. Options available: ₹25k, ₹50k, ₹1L, ₹2L, ₹3L. Source: https://www.hdfcergo.com/docs/default-source/downloads/policy-wordings/health/optima-secure-revision-pw.pdf"
+  },
+
+  "coinsurance": {
+    "value_percent": 80,
+    "notes": "Insurer pays 80% of admissible claim amount above the deductible. Policyholder bears the remaining 20% as coinsurance. This is a standard indemnity plan structure. Indian health plans commonly use 80/20 or 90/10 splits on comprehensive plans.",
+    "source": "Representative of mid-tier comprehensive plans from HDFC ERGO, Care Health and ICICI Lombard. Beshak.org plan comparison data (April 2026). Individual policy wordings available at respective insurer websites."
+  },
+
+  "copay": {
+    "value_percent": 0,
+    "applies_to": "none",
+    "senior_citizen_copay_percent": 20,
+    "notes": "No co-payment for members under 60 years. A mandatory 20% co-payment applies if the primary insured is 60 or above at the time of entry or renewal. This is a common structure across HDFC ERGO and Niva Bupa standard plans. Co-payment is applied on admissible claim amount after deductible.",
+    "source": "HDFC ERGO Optima Secure CIS document (UIN: HDFHLIP24092V032324). Niva Bupa ReAssure 2.0 policy wording. https://www.hdfcergo.com/docs/default-source/downloads/policy-wordings/health/cis---myoptimasecure.pdf"
+  },
+
+  "out_of_pocket_max": {
+    "value_inr": 200000,
+    "notes": "Maximum total patient out-of-pocket liability (deductible + coinsurance share) capped at ₹2,00,000 per policy year. Once OOP max is hit, insurer covers 100% of further admissible claims up to sum insured. Indian indemnity plans do not universally mandate OOP max; this is modelled on premium tier plans. Value chosen as representative of ₹10L sum insured plans.",
+    "source": "Modelled on ICICI Lombard Health Advantage and Care Supreme plan structures. IRDAI Master Circular on Health Insurance Business (29 May 2024) allows but does not mandate OOP max caps. https://irdai.gov.in/health-dept"
+  },
+
+  "network_rules": {
+    "network_hospital_count": 10000,
+    "cashless_available": true,
+    "cashless_preauth_turnaround_hours": 1,
+    "cashless_discharge_approval_hours": 3,
+    "non_network_reimbursement_percent": 80,
+    "non_network_reimbursement_notes": "For treatment at non-network hospitals, policyholder pays upfront and files reimbursement claim within 15 days of discharge. Reimbursement is 80% of admissible expenses (same coinsurance ratio). Room rent at non-network hospitals is capped at ₹5,000/day for standard room. Non-admissible consumables are deducted.",
+    "room_rent_network": "No sub-limit on room rent at network hospitals for this plan tier",
+    "room_rent_non_network_inr_per_day": 5000,
+    "source": "IRDAI Master Circular 29 May 2024, Clause on Cashless Claims: insurers must approve cashless within 1 hour of receiving documents; final discharge within 3 hours. HDFC ERGO network hospital list. https://www.hdfcergo.com/health-insurance/optima-secure. Non-network reimbursement terms from HDFC ERGO Optima Secure policy wording Section 8."
+  },
+
+  "covered_services": [
+    {
+      "service": "Inpatient Hospitalisation",
+      "cpt_equivalent": "General admission",
+      "covered": true,
+      "sub_limit_inr": null,
+      "notes": "Covered up to sum insured for minimum 24-hour admission. Room, nursing, surgeon fees, anaesthesia, OT charges, diagnostics all included."
+    },
+    {
+      "service": "ACL Reconstruction",
+      "cpt_code": "29888",
+      "icd10": "M23.619",
+      "covered": true,
+      "sub_limit_inr": null,
+      "waiting_period_months": 24,
+      "preauth_required": true,
+      "notes": "Covered under orthopaedic surgery benefit after 24-month waiting period if the condition is pre-existing. Acute injury (e.g., sports accident) with no prior diagnosis: covered from policy commencement. Pre-authorisation mandatory as it is a planned surgical procedure."
+    },
+    {
+      "service": "Meniscectomy / Meniscus Repair",
+      "cpt_code": "29881",
+      "icd10": "M23.200",
+      "covered": true,
+      "sub_limit_inr": null,
+      "waiting_period_months": 24,
+      "preauth_required": true,
+      "notes": "Same waiting period and preauth rules as ACL reconstruction. Often performed in conjunction with 29888; both are covered in the same admission."
+    },
+    {
+      "service": "Physical Therapy / Physiotherapy",
+      "cpt_codes": ["97161", "97110"],
+      "covered": true,
+      "setting": "post-hospitalisation only",
+      "sub_limit_inr": 30000,
+      "post_discharge_window_days": 90,
+      "preauth_required": false,
+      "notes": "Physiotherapy covered as post-hospitalisation benefit for up to 90 days following discharge, subject to ₹30,000 sub-limit per claim. Outpatient-only physiotherapy without a linked hospitalisation is NOT covered under standard plan. Pre-auth not required but treating doctor referral must be attached to reimbursement claim.",
+      "source": "HDFC ERGO Optima Secure prospectus: post-hospitalisation expenses covered up to 180 days. Sub-limit modelled on Care Health and Star Health Comprehensive plan PT sub-limits. https://www.hdfcergo.com/docs/default-source/downloads/prospectus/health/my-optima-secure-prospectus.pdf"
+    },
+    {
+      "service": "Day Care Procedures",
+      "covered": true,
+      "sub_limit_inr": null,
+      "notes": "All IRDAI-listed day care procedures covered. ACL arthroscopy qualifies as day care if patient discharged same day."
+    },
+    {
+      "service": "Pre-Hospitalisation Expenses",
+      "covered": true,
+      "window_days_before_admission": 60,
+      "sub_limit_inr": null
+    },
+    {
+      "service": "Post-Hospitalisation Expenses",
+      "covered": true,
+      "window_days_after_discharge": 90,
+      "sub_limit_inr": null
+    }
+  ],
+
+  "exclusions": [
+    {
+      "exclusion": "Outpatient Physiotherapy (without linked hospitalisation)",
+      "notes": "Stand-alone OPD physiotherapy sessions not covered under base plan. OPD add-on rider required."
+    },
+    {
+      "exclusion": "Pre-existing ACL/Meniscus condition within 24-month waiting period",
+      "notes": "If the injury or degeneration was diagnosed before policy start, covered only after 24 months of continuous coverage."
+    },
+    {
+      "exclusion": "Cosmetic or Aesthetic Surgery",
+      "notes": "Knee surgery purely for cosmetic reasons excluded. Reconstructive surgery post-accident is covered."
+    },
+    {
+      "exclusion": "Non-Allopathic Treatments (unless AYUSH add-on active)",
+      "notes": "AYUSH treatments (Ayurveda, Yoga, Naturopathy etc.) require separate AYUSH benefit to be active."
+    },
+    {
+      "exclusion": "War, Nuclear, Biological Hazards",
+      "notes": "Standard IRDAI mandatory permanent exclusion. Source: IRDAI (Insurance Products) Regulations, 2024, Annexure II Standard Permanent Exclusions."
+    },
+    {
+      "exclusion": "Self-inflicted Injury",
+      "notes": "Standard IRDAI mandatory exclusion."
+    },
+    {
+      "exclusion": "Experimental or Unproven Treatments",
+      "notes": "Treatments not approved by appropriate medical bodies excluded."
+    },
+    {
+      "exclusion": "Consumables (unless Protect add-on active)",
+      "notes": "Non-medical consumables like gloves, cotton, syringes excluded from base plan. Covered with Protect benefit (add-on)."
+    }
+  ],
+
+  "preauthorization": {
+    "required_for_cpt": ["29888", "29881"],
+    "required_for_categories": ["Planned surgery", "Joint replacement", "Organ transplant", "Bariatric surgery"],
+    "not_required_for": ["Emergency admissions", "Day care if under ₹50,000", "Physiotherapy reimbursement"],
+    "submission_window_hours_before_admission": 48,
+    "turnaround_hours": 1,
+    "documents_required": [
+      "Treating doctor's clinical notes",
+      "MRI / diagnostic reports",
+      "Surgeon's estimate",
+      "Hospital pre-admission form",
+      "Patient ABHA number (if available)"
+    ],
+    "emergency_process": "For emergency admissions, hospital intimates insurer within 24 hours of admission. Cashless authorisation issued retroactively.",
+    "source": "IRDAI Master Circular Health Insurance Business, 29 May 2024: cashless authorisation within 1 hour. HDFC ERGO Optima Secure policy wording Section 7 (Claims Procedure). https://irdai.gov.in/health-dept"
+  },
+
+  "claim_rules": {
+    "claim_intimation_window_days": 1,
+    "reimbursement_filing_window_days": 15,
+    "settlement_timeline_days": 30,
+    "interest_on_delay_percent_above_bank_rate": 2,
+    "documents_for_reimbursement": [
+      "Duly filled claim form",
+      "Original hospital bills and receipts",
+      "Discharge summary",
+      "All diagnostic reports (MRI, X-Ray, blood work)",
+      "Surgeon's operation notes",
+      "Pharmacy bills with prescriptions",
+      "Pre-auth approval letter (if applicable)",
+      "KYC documents (Aadhaar / PAN)"
+    ],
+    "contribution_clause": "For indemnity policies with multiple insurers: policyholder nominates this policy as primary OR secondary. Primary insurer settles admissible amount up to sum insured first. Balance, if any, is claimed from secondary insurer with primary settlement letter attached.",
+    "source": "IRDAI Master Circular on Protection of Policyholders Interests 2024: claims must be settled within 30 days; 2% interest above bank rate on delays. ManipalCigna blog on IRDAI claim guidelines. https://www.manipalcigna.com/blog/latest-irda-guidelines-for-health-insurance"
+  },
+
+  "coordination_of_benefits": {
+    "irdai_framework": "Indemnity Policy COB Rules per IRDAI (Insurance Products) Regulations 2024",
+    "policyholder_choice": "Policyholder has the right to nominate any one of their active indemnity policies as primary for a given claim. Source: IRDAI Master Circular Sep 2024, revised guidelines on multiple policy claims.",
+    "primary_insurer_role": "Settles admissible claim amount up to its own sum insured and policy terms. Issues settlement letter with breakdown of amount paid and balance.",
+    "secondary_insurer_role": "Receives claim for balance amount from primary settlement. Applies its own policy terms (deductible, coinsurance) to the balance. Cannot pay more than actual expenses minus primary payment.",
+    "no_profit_principle": "Total reimbursement from all insurers cannot exceed actual medical expenses incurred. Indemnity principle strictly enforced.",
+    "benefit_policies_exception": "Benefit-based policies (e.g., critical illness lump sum) are exempt from COB and can be claimed from all insurers simultaneously.",
+    "insurer_coordination_obligation": "If claim exceeds primary policy's sum insured, primary insurer must proactively seek details of secondary policy from policyholder and coordinate with secondary insurer. Policyholder must not be burdened.",
+    "source": "IRDAI Health Department FAQ (https://irdai.gov.in/health-dept): 'In case the available coverage under the said policy is less than the admissible claim amount, the primary Insurer shall seek the details of other available policies and shall coordinate with other Insurers.' IRDAI (Insurance Products) Regulations 2024, Master Circular 29 May 2024."
+  }
+}

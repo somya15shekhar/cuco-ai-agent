@@ -1,0 +1,105 @@
+AARAV SHARMA CLAIM OUTPUT:
+{
+  "claim_summary": {
+    "claim_id": "CLM-AARAV-001",
+    "patient_name": "Aarav Sharma",
+    "diagnosis": "ACL tear and medial meniscus damage, left knee",
+    "total_billed": 450000.0,
+    "primary_insurer": "Plan B",
+    "secondary_insurer": "Plan A"
+  },
+  "payment_breakdown": {
+    "primary_insurer_payment": 318750.0,
+    "secondary_insurer_payment": 65000.0,
+    "uncovered_amount": 0.0
+  },
+  "patient_responsibility": {
+    "final_patient_responsibility": 66250.0,
+    "primary_deductible_applied": 25000.0,
+    "primary_coinsurance_patient": 106250.0,
+    "primary_oop_applied": 131250.0,
+    "secondary_deductible_applied": 50000.0,
+    "secondary_coinsurance_patient": 16250.0
+  },
+  "validation_status": {
+    "is_valid": true,
+    "retry_count": 1,
+    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-AARAV-001 has failed validation due to a ledger mismatch. The calculated breakdown shows a total of Primary Payment, Secondary Payment, Patient Responsibility, and Uncovered Amount as $450100.0, which does not match the Total Billed amount of $450000.0. The discrepancy is $100.0.\n\nThe issue lies in the fact that the sum of the calculated payments and responsibilities ($450100.0) exceeds the Total Billed amount ($450000.0) by $100.0. This indicates that there is an error in the COB calculation, resulting in an overpayment of $100.0.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to ensure accurate calculations and reconciliation of the ledger. The retry process will help to identify and correct the mistake, providing a revised breakdown that accurately reflects the claim details and resolves the ledger mismatch."
+  },
+  "workflow_log": [
+    "IntakeNode: Initializing claims workflow from members.json.",
+    "IntakeNode: Loaded member Aarav Sharma (MBR001). Primary Insurer: Insurer2, Secondary Insurer: Insurer1.",
+    "EligibilityNode: Checking CPT eligibility against primary plan.",
+    "EligibilityNode: Eligibility verification complete. Eligible: True.",
+    "PreAuthNode: Checking CPT preauthorization requirements.",
+    "PreAuthNode: Preauth check complete. Requires Preauth: True.",
+    "FetchPrimaryPlanNode: Fetching primary plan details.",
+    "FetchPrimaryPlanNode: Primary plan loaded: FlexiCare Plus",
+    "FetchSecondaryPlanNode: Fetching secondary plan details.",
+    "FetchSecondaryPlanNode: Secondary plan loaded: SecureHealth Premier",
+    "COBNode: Running COB calculation engine (Attempt 0).",
+    "COBNode: Simulated mathematical discrepancy injected for testing reflection.",
+    "ValidationNode: Validating financial ledger reconciliation.",
+    "ValidationNode: Completed validation. Found 1 error(s).",
+    "ReflectionNode: Analyzing validation failure with Groq LLM.",
+    "ReflectionNode: Groq diagnosis generated.",
+    "COBNode: Running COB calculation engine (Attempt 1).",
+    "ValidationNode: Validating financial ledger reconciliation.",
+    "ValidationNode: Completed validation. Found 0 error(s).",
+    "OutputNode: Claim processing completed successfully."
+  ]
+}
+
+==================================================
+
+PRIYA SHARMA CLAIM OUTPUT:
+{
+  "claim_summary": {
+    "claim_id": "CLM-PRIYA-001",
+    "patient_name": "Priya Sharma",
+    "diagnosis": "Post-operative physiotherapy following right knee meniscus repair",
+    "total_billed": 30000.0,
+    "primary_insurer": "Plan A",
+    "secondary_insurer": "Plan B"
+  },
+  "payment_breakdown": {
+    "primary_insurer_payment": 0.0,
+    "secondary_insurer_payment": 3375.0,
+    "uncovered_amount": 0.0
+  },
+  "patient_responsibility": {
+    "final_patient_responsibility": 26625.0,
+    "primary_deductible_applied": 30000.0,
+    "primary_coinsurance_patient": 0.0,
+    "primary_oop_applied": 30000.0,
+    "secondary_deductible_applied": 25000.0,
+    "secondary_coinsurance_patient": 1625.0
+  },
+  "validation_status": {
+    "is_valid": true,
+    "retry_count": 1,
+    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-PRIYA-001 has failed validation due to a ledger mismatch. The calculated breakdown shows a Primary Payment of $0.0, a Secondary Payment of $3375.0, an Uncovered Billed amount of $0.0, and a Patient Responsibility of $26725.0. \n\nWhen these amounts are summed, they total $30100.0 ($0.0 + $3375.0 + $26725.0 + $0.0), which does not match the Total Billed amount of $30000.0. This results in a discrepancy of $100.0.\n\nThe issue here is that the calculated payments and responsibilities exceed the total billed amount by $100.0, indicating an error in the COB calculation process. This discrepancy suggests that there might be an incorrect application of payment rules, incorrect data input, or an issue with the COB engine's logic.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to ensure accurate calculations and proper reconciliation of the ledger. The retry process should help identify and correct the source of the discrepancy, ensuring that the calculated breakdown accurately reflects the total billed amount."
+  },
+  "workflow_log": [
+    "IntakeNode: Initializing claims workflow from members.json.",
+    "IntakeNode: Loaded member Priya Sharma (MBR002). Primary Insurer: Insurer1, Secondary Insurer: Insurer2.",
+    "EligibilityNode: Checking CPT eligibility against primary plan.",
+    "EligibilityNode: Eligibility verification complete. Eligible: True.",
+    "PreAuthNode: Checking CPT preauthorization requirements.",
+    "PreAuthNode: Preauth check complete. Requires Preauth: False.",
+    "FetchPrimaryPlanNode: Fetching primary plan details.",
+    "FetchPrimaryPlanNode: Primary plan loaded: SecureHealth Premier",
+    "FetchSecondaryPlanNode: Fetching secondary plan details.",
+    "FetchSecondaryPlanNode: Secondary plan loaded: FlexiCare Plus",
+    "COBNode: Running COB calculation engine (Attempt 0).",
+    "COBNode: Simulated mathematical discrepancy injected for testing reflection.",
+    "ValidationNode: Validating financial ledger reconciliation.",
+    "ValidationNode: Completed validation. Found 1 error(s).",
+    "ReflectionNode: Analyzing validation failure with Groq LLM.",
+    "ReflectionNode: Groq diagnosis generated.",
+    "COBNode: Running COB calculation engine (Attempt 1).",
+    "ValidationNode: Validating financial ledger reconciliation.",
+    "ValidationNode: Completed validation. Found 0 error(s).",
+    "OutputNode: Claim processing completed successfully."
+  ]
+}

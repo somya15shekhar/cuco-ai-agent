@@ -1,0 +1,187 @@
+{
+  "insurer": "Insurer2",
+  "plan_name": "FlexiCare Plus",
+  "plan_id": "planB",
+  "sum_insured": 500000,
+  "policy_term_years": 1,
+
+  "annual_deductible": {
+    "value_inr": 25000,
+    "type": "per_claim",
+    "notes": "Per-claim deductible of ₹25,000 applies to each hospitalisation claim separately (not aggregate). Policyholder pays the first ₹25,000 of each distinct hospitalisation event. This differs from Plan A which uses an aggregate annual deductible. Per-claim deductible is common in mid-range plans from Niva Bupa and Star Health.",
+    "source": "Niva Bupa ReAssure 2.0 and Star Health Comprehensive plan structures. Beshak.org plan data (April 2026). HDFC ERGO Optima Secure policy wording defines both aggregate and per-claim deductible types. https://www.beshak.org/insurance/health-insurance/best-health-insurance-plans/niva-bupa-re-assure-2-0-platinum/"
+  },
+
+  "coinsurance": {
+    "value_percent": 75,
+    "notes": "Insurer pays 75% of admissible claim amount after deductible is applied. Policyholder bears 25%. Slightly lower than Plan A's 80% to reflect lower sum insured and per-claim deductible structure. 75/25 coinsurance is representative of mid-tier plans in India.",
+    "source": "Star Health Comprehensive, Care Advantage plan coinsurance structures. Representative value based on Policybazaar plan comparison data and Beshak.org ratings (April 2026)."
+  },
+
+  "copay": {
+    "value_percent": 10,
+    "applies_to": "non_network_hospitals",
+    "senior_citizen_copay_percent": 20,
+    "notes": "10% co-payment applies when treatment is taken at a non-network hospital. No co-payment at network hospitals for members under 60. Senior citizens (60+) face 20% co-payment regardless of network status. Co-payment is calculated on admissible claim amount after deductible.",
+    "source": "Niva Bupa copay policy page (https://www.nivabupa.com/health-insurance/copay-health-insurance.html). Star Health non-network co-payment structure. Common in mid-range plans to discourage non-network hospital usage."
+  },
+
+  "out_of_pocket_max": {
+    "value_inr": 150000,
+    "notes": "OOP max of ₹1,50,000 per policy year (lower than Plan A due to lower sum insured). Once cumulative patient out-of-pocket (deductibles + coinsurance shares) reaches ₹1,50,000, insurer covers 100% of further admissible claims. OOP max is tracked annually and resets at renewal.",
+    "source": "Modelled on Care Supreme and ICICI Lombard Complete Health plan OOP cap structures. IRDAI does not mandate OOP caps but allows them under Insurance Products Regulations 2024."
+  },
+
+  "network_rules": {
+    "network_hospital_count": 8000,
+    "cashless_available": true,
+    "cashless_preauth_turnaround_minutes": 30,
+    "cashless_discharge_approval_hours": 3,
+    "non_network_reimbursement_percent": 75,
+    "non_network_copay_percent": 10,
+    "non_network_reimbursement_notes": "For non-network hospitalisation, policyholder pays upfront and files reimbursement within 15 days of discharge. Reimbursement is 75% of admissible expenses minus 10% co-payment on non-network usage. Room rent at non-network hospitals capped at ₹3,000/day for standard room.",
+    "room_rent_network_inr_per_day": null,
+    "room_rent_non_network_inr_per_day": 3000,
+    "room_rent_network_notes": "No sub-limit on room rent at network hospitals under this plan.",
+    "source": "Niva Bupa 30-minute pre-auth commitment (https://www.nivabupa.com/). IRDAI Master Circular 2024: cashless discharge within 3 hours. Network hospital count based on Niva Bupa's 10,000+ network and Star Health's 14,000+ network; 8,000 is a conservative mid-range figure."
+  },
+
+  "covered_services": [
+    {
+      "service": "Inpatient Hospitalisation",
+      "cpt_equivalent": "General admission",
+      "covered": true,
+      "sub_limit_inr": null,
+      "notes": "Covered up to sum insured for minimum 24-hour admission. All standard hospitalisation components included."
+    },
+    {
+      "service": "ACL Reconstruction",
+      "cpt_code": "29888",
+      "icd10": "M23.619",
+      "covered": true,
+      "sub_limit_inr": null,
+      "waiting_period_months": 24,
+      "preauth_required": true,
+      "notes": "Covered after 24-month waiting period for pre-existing conditions. Acute injury not classified as pre-existing: covered from day 1 of policy. Pre-authorisation mandatory for all planned surgeries."
+    },
+    {
+      "service": "Meniscectomy / Meniscus Repair",
+      "cpt_code": "29881",
+      "icd10": "M23.200",
+      "covered": true,
+      "sub_limit_inr": null,
+      "waiting_period_months": 24,
+      "preauth_required": true,
+      "notes": "Same waiting period and preauth rules as ACL. Covered in combined procedures (arthroscopy with ACL + meniscus)."
+    },
+    {
+      "service": "Physical Therapy / Physiotherapy",
+      "cpt_codes": ["97161", "97110"],
+      "covered": true,
+      "setting": "post-hospitalisation only",
+      "sub_limit_inr": 20000,
+      "post_discharge_window_days": 60,
+      "preauth_required": false,
+      "notes": "Post-hospitalisation physiotherapy covered for up to 60 days after discharge, subject to ₹20,000 sub-limit per claim episode. Lower sub-limit than Plan A reflects lower sum insured base. Standalone OPD physiotherapy not covered without linked admission.",
+      "source": "Star Health Comprehensive post-hospitalisation benefit covers 60 days. Sub-limit of ₹20,000 modelled on Star Health and Care Health PT reimbursement caps."
+    },
+    {
+      "service": "Day Care Procedures",
+      "covered": true,
+      "sub_limit_inr": null,
+      "notes": "All IRDAI-listed day care procedures covered. Arthroscopic ACL repair commonly performed as day care."
+    },
+    {
+      "service": "Pre-Hospitalisation Expenses",
+      "covered": true,
+      "window_days_before_admission": 30,
+      "sub_limit_inr": null,
+      "notes": "30-day pre-hospitalisation window (shorter than Plan A's 60-day window), reflecting standard mid-tier plan terms."
+    },
+    {
+      "service": "Post-Hospitalisation Expenses",
+      "covered": true,
+      "window_days_after_discharge": 60,
+      "sub_limit_inr": null
+    }
+  ],
+
+  "exclusions": [
+    {
+      "exclusion": "Outpatient Physiotherapy (without linked hospitalisation)",
+      "notes": "OPD-only physiotherapy not covered. Must be linked to an inpatient or day care admission."
+    },
+    {
+      "exclusion": "Pre-existing orthopaedic conditions within 24-month waiting period",
+      "notes": "Any ACL, meniscus or knee condition documented before policy start is subject to 24-month waiting period."
+    },
+    {
+      "exclusion": "Non-Network Hospital Co-payment non-admissible items",
+      "notes": "Non-medical consumables, registration charges, attendant charges not reimbursed at non-network hospitals."
+    },
+    {
+      "exclusion": "War, Nuclear, Biological Hazards",
+      "notes": "IRDAI standard permanent exclusion."
+    },
+    {
+      "exclusion": "Self-inflicted Injury",
+      "notes": "IRDAI standard permanent exclusion."
+    },
+    {
+      "exclusion": "Experimental Treatments",
+      "notes": "Treatments not approved by relevant medical regulatory bodies."
+    },
+    {
+      "exclusion": "Obesity / Weight Management Surgery",
+      "notes": "Bariatric surgery excluded unless clinically necessary and specifically covered by add-on."
+    }
+  ],
+
+  "preauthorization": {
+    "required_for_cpt": ["29888", "29881"],
+    "required_for_categories": ["Planned surgery", "Knee and joint surgery", "Maternity", "Organ transplant"],
+    "not_required_for": ["Emergency admissions (intimate within 24 hours)", "Day care procedures under ₹25,000", "Post-discharge physiotherapy reimbursement"],
+    "submission_window_hours_before_admission": 48,
+    "turnaround_minutes": 30,
+    "documents_required": [
+      "Referral letter from general physician or orthopaedic specialist",
+      "MRI report (not older than 3 months)",
+      "Surgeon's estimated cost breakdown",
+      "Hospital admission letter",
+      "Policy number and health card"
+    ],
+    "emergency_process": "Hospital calls insurer helpline within 24 hours of emergency admission. Cashless authorisation is issued within 1 hour of document receipt.",
+    "source": "Niva Bupa: 30-minute pre-auth turnaround commitment for all active policies (https://www.nivabupa.com/). IRDAI Master Circular 2024: 1 hour for cashless authorisation; 3 hours for discharge."
+  },
+
+  "claim_rules": {
+    "claim_intimation_window_hours": 24,
+    "reimbursement_filing_window_days": 15,
+    "settlement_timeline_days": 30,
+    "interest_on_delay_percent_above_bank_rate": 2,
+    "tpa_or_inhouse": "in-house claim settlement",
+    "documents_for_reimbursement": [
+      "Claim form (insurer-specific)",
+      "Original itemised hospital bills",
+      "Discharge summary with diagnosis and treatment codes",
+      "Surgeon's operative notes",
+      "All investigation reports",
+      "Pharmacy receipts with prescriptions",
+      "Bank account details for NEFT transfer",
+      "Primary insurer settlement letter (for secondary COB claims)"
+    ],
+    "contribution_clause": "As secondary insurer: accepts claim for balance amount after primary insurer has settled its share. Applies own deductible (₹25,000 per claim) and coinsurance (75%) to the residual balance. Does not reimburse amount already paid by primary insurer.",
+    "source": "IRDAI Master Circular on Protection of Policyholders Interests 2024. ManipalCigna blog: claims settled within 30 days; 2% above bank rate for delays. Niva Bupa in-house claim settlement: https://www.nivabupa.com/"
+  },
+
+  "coordination_of_benefits": {
+    "irdai_framework": "Indemnity Policy COB Rules per IRDAI (Insurance Products) Regulations 2024",
+    "role_in_aarav_claim": "Secondary insurer for Aarav's ACL surgery. Receives residual balance after Insurer1 (primary) settles its share.",
+    "role_in_priya_claim": "Primary insurer for Priya's physiotherapy bills (policyholder's choice).",
+    "secondary_insurer_deductible_treatment": "When acting as secondary insurer, the per-claim deductible of ₹25,000 is applied to the residual balance passed from the primary insurer, not to the original total claim. This reflects standard IRDAI contribution clause interpretation.",
+    "no_profit_principle": "Total reimbursement across both insurers cannot exceed actual admissible expenses.",
+    "policyholder_obligation": "Policyholder must disclose all active policies at the time of claim. Non-disclosure may lead to claim rejection per policy terms.",
+    "insurer_coordination_obligation": "If acting as primary insurer and claim exceeds sum insured, must coordinate with secondary insurer proactively.",
+    "source": "IRDAI Health Department official FAQ: 'The primary Insurer shall seek the details of other available policies and coordinate with other Insurers.' (https://irdai.gov.in/health-dept). IRDAI (Insurance Products) Regulations 2024, Master Circular 29 May 2024, IRDAI/HLT/CIR/PRO/84/5/2024."
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "description": "Coverage rules and COB calculation logic for both plans. Drives the COB engine in app/services/cob.py.",
+  "regulatory_basis": "IRDAI (Insurance Products) Regulations 2024. IRDAI Health Dept FAQ on multiple policies.",
+
+  "cob_framework": {
+    "policy_type": "Indemnity (both plans)",
+    "principle": "No-profit / indemnity principle: combined reimbursement from all policies cannot exceed actual admissible expenses",
+    "primary_insurer_selection": "Policyholder's choice per IRDAI revised Master Circular Sep 2024. Can nominate any active indemnity policy as primary.",
+    "aarav_primary_insurer": "planB (Insurer2 FlexiCare Plus)",
+    "aarav_secondary_insurer": "planA (Insurer1 SecureHealth Premier)",
+    "priya_primary_insurer": "planA (Insurer1 SecureHealth Premier)",
+    "priya_secondary_insurer": "planB (Insurer2 FlexiCare Plus)",
+    "rationale": "Aarav selects Plan B as primary because Plan B's per-claim deductible (₹25k) is lower than Plan A's aggregate deductible (₹50k) for a single large claim, maximising primary coverage. Priya selects Plan A as primary because Plan A has a higher PT sub-limit (₹30k vs ₹20k) and longer post-discharge window (90 vs 60 days)."
+  },
+
+  "planA_calculation_rules": {
+    "plan_id": "planA",
+    "step1_deductible": {
+      "type": "aggregate_annual",
+      "amount_inr": 50000,
+      "logic": "Subtract deductible from total admissible claim. If total claim <= 50000, insurer pays nothing; patient pays full amount. Deductible is shared across all claims in the policy year. If deductible_already_met > 0, remaining_deductible = max(0, 50000 - deductible_already_met)."
+    },
+    "step2_coinsurance": {
+      "insurer_pays_percent": 80,
+      "patient_pays_percent": 20,
+      "logic": "On amount above deductible: insurer_payment = (claim - remaining_deductible) * 0.80. Patient coinsurance share = (claim - remaining_deductible) * 0.20."
+    },
+    "step3_oop_max_check": {
+      "oop_max_inr": 200000,
+      "logic": "Track cumulative patient payments (deductible + coinsurance). If cumulative_patient_payment >= 200000, insurer covers 100% of further admissible claims for rest of policy year."
+    },
+    "step4_copay": {
+      "applies": false,
+      "notes": "No co-payment for members under 60 at network hospitals."
+    },
+    "pt_sub_limit": {
+      "applies_to_cpt": ["97161", "97110"],
+      "sub_limit_inr": 30000,
+      "window_days": 90,
+      "logic": "PT reimbursement is capped at ₹30,000 regardless of actual spend. Sub-limit is applied before coinsurance: insurer pays min(actual_PT_cost, 30000) * 0.80."
+    }
+  },
+
+  "planB_calculation_rules": {
+    "plan_id": "planB",
+    "step1_deductible": {
+      "type": "per_claim",
+      "amount_inr": 25000,
+      "logic": "Each new hospitalisation episode: patient pays first ₹25,000. If claim <= 25000, insurer pays nothing. When acting as secondary insurer, deductible is applied to the residual balance from primary settlement, not original total claim."
+    },
+    "step2_coinsurance": {
+      "insurer_pays_percent": 75,
+      "patient_pays_percent": 25,
+      "logic": "On amount above deductible: insurer_payment = (claim_or_residual - per_claim_deductible) * 0.75."
+    },
+    "step3_copay_non_network": {
+      "applies_to": "non_network_hospitals",
+      "copay_percent": 10,
+      "logic": "At non-network hospitals, additional 10% co-payment applied on admissible amount after deductible: effective_insurer_payment = (claim - deductible) * 0.75 * (1 - 0.10). Or equivalently: patient pays deductible + 25% coinsurance + 10% copay on (claim - deductible)."
+    },
+    "step4_oop_max_check": {
+      "oop_max_inr": 150000,
+      "logic": "Cumulative patient payments tracked annually. Once ₹1,50,000 reached, insurer pays 100% of further claims."
+    },
+    "pt_sub_limit": {
+      "applies_to_cpt": ["97161", "97110"],
+      "sub_limit_inr": 20000,
+      "window_days": 60,
+      "logic": "PT reimbursement capped at ₹20,000. Applied before coinsurance: insurer pays min(actual_PT_cost, 20000) * 0.75."
+    }
+  },
+
+  "worked_example_aarav_surgery": {
+    "description": "ACL Reconstruction + Meniscectomy. Total bill: ₹4,50,000. Plan B is primary, Plan A is secondary.",
+    "total_bill_inr": 450000,
+    "primary_plan": "planB",
+    "secondary_plan": "planA",
+
+    "primary_calculation": {
+      "plan": "planB (FlexiCare Plus)",
+      "per_claim_deductible": 25000,
+      "amount_after_deductible": 425000,
+      "coinsurance_rate": 0.75,
+      "primary_payment": 318750,
+      "patient_coinsurance_share_primary": 106250,
+      "patient_total_after_primary": 131250,
+      "formula": "primary_payment = (450000 - 25000) * 0.75 = 425000 * 0.75 = 318750"
+    },
+
+    "secondary_calculation": {
+      "plan": "planA (SecureHealth Premier)",
+      "residual_balance": 131250,
+      "aggregate_deductible": 50000,
+      "residual_after_deductible": 81250,
+      "coinsurance_rate": 0.80,
+      "secondary_payment": 65000,
+      "patient_oop_from_secondary": 16250,
+      "formula": "secondary_payment = (131250 - 50000) * 0.80 = 81250 * 0.80 = 65000"
+    },
+
+    "final_summary": {
+      "total_bill": 450000,
+      "plan_b_pays": 318750,
+      "plan_a_pays": 65000,
+      "patient_oop": 66250,
+      "verification": "318750 + 65000 + 66250 = 450000. Check: TRUE",
+      "patient_oop_within_planB_oop_max": "66250 < 150000. TRUE",
+      "patient_oop_within_planA_oop_max": "66250 < 200000. TRUE"
+    }
+  },
+
+  "worked_example_priya_pt": {
+    "description": "Physiotherapy (CPT 97161 + 97110). Total PT bill: ₹30,000. Plan A is primary, Plan B is secondary.",
+    "total_bill_inr": 30000,
+    "primary_plan": "planA",
+    "secondary_plan": "planB",
+
+    "primary_calculation": {
+      "plan": "planA (SecureHealth Premier)",
+      "pt_sub_limit": 30000,
+      "admissible_amount": 30000,
+      "aggregate_deductible_remaining": 50000,
+      "note": "If Priya has not met her Plan A deductible yet, the full ₹30,000 falls within the deductible and Plan A pays ₹0. Patient pays ₹30,000.",
+      "scenario_deductible_already_met": {
+        "deductible_remaining": 0,
+        "amount_after_deductible": 30000,
+        "coinsurance_rate": 0.80,
+        "primary_payment": 24000,
+        "patient_share": 6000,
+        "formula": "primary_payment = 30000 * 0.80 = 24000"
+      }
+    },
+
+    "secondary_calculation": {
+      "plan": "planB (FlexiCare Plus)",
+      "residual_after_primary": 6000,
+      "pt_sub_limit_planB": 20000,
+      "per_claim_deductible": 25000,
+      "note": "Residual ₹6,000 is less than Plan B's per-claim deductible of ₹25,000. Plan B pays ₹0. Patient bears the full ₹6,000 residual.",
+      "secondary_payment": 0,
+      "patient_oop": 6000
+    },
+
+    "final_summary_deductible_met_scenario": {
+      "total_bill": 30000,
+      "plan_a_pays": 24000,
+      "plan_b_pays": 0,
+      "patient_oop": 6000,
+      "verification": "24000 + 0 + 6000 = 30000. Check: TRUE"
+    }
+  }
+}

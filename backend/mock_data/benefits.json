@@ -1,0 +1,110 @@
+{
+  "description": "Combined benefits comparison for Insurer1 (Plan A) and Insurer2 (Plan B). All values in INR unless stated.",
+  "last_updated": "2025-07-10",
+  "regulatory_basis": "IRDAI (Insurance Products) Regulations 2024, Master Circular 29 May 2024",
+
+  "benefits": [
+    {
+      "benefit_name": "Sum Insured",
+      "planA": "₹10,00,000",
+      "planB": "₹5,00,000",
+      "notes": "Plan A offers higher sum insured reflecting a premium-tier plan. Plan B is a mid-tier plan. Both are individual policies."
+    },
+    {
+      "benefit_name": "Deductible",
+      "planA": "₹50,000 aggregate per year (voluntary)",
+      "planB": "₹25,000 per claim",
+      "notes": "Plan A aggregate deductible is shared across all claims in a year. Plan B per-claim deductible resets with each new hospitalisation episode. Plan B's structure means higher total patient exposure if multiple claims occur in a year."
+    },
+    {
+      "benefit_name": "Coinsurance (Insurer Share)",
+      "planA": "80%",
+      "planB": "75%",
+      "notes": "After deductible, Plan A insurer covers 80% of admissible amount; Plan B covers 75%. Patient bears 20% and 25% respectively."
+    },
+    {
+      "benefit_name": "Co-payment",
+      "planA": "0% (nil for under 60)",
+      "planB": "10% at non-network hospitals",
+      "notes": "Plan A has no co-payment for standard members. Plan B penalises non-network usage with a 10% co-payment on top of the coinsurance share."
+    },
+    {
+      "benefit_name": "Out-of-Pocket Maximum",
+      "planA": "₹2,00,000 per year",
+      "planB": "₹1,50,000 per year",
+      "notes": "Caps total patient liability. Once reached, insurer pays 100% of further admissible claims for the policy year."
+    },
+    {
+      "benefit_name": "ACL Reconstruction (CPT 29888)",
+      "planA": "Covered, pre-auth required",
+      "planB": "Covered, pre-auth required",
+      "notes": "Both plans cover ACL reconstruction. 24-month waiting period for pre-existing conditions. Acute trauma covered from day 1."
+    },
+    {
+      "benefit_name": "Meniscectomy (CPT 29881)",
+      "planA": "Covered, pre-auth required",
+      "planB": "Covered, pre-auth required",
+      "notes": "Both plans cover meniscus repair/removal. Same waiting period and pre-auth rules as ACL."
+    },
+    {
+      "benefit_name": "Physical Therapy (CPT 97161, 97110)",
+      "planA": "Covered post-discharge, ₹30,000 sub-limit, 90 days",
+      "planB": "Covered post-discharge, ₹20,000 sub-limit, 60 days",
+      "notes": "Both cover post-hospitalisation physiotherapy only. OPD-only PT without linked admission not covered in base plan. Plan A has higher sub-limit and longer post-discharge window."
+    },
+    {
+      "benefit_name": "Pre-Hospitalisation Coverage",
+      "planA": "60 days",
+      "planB": "30 days",
+      "notes": "Diagnostics, consultations, medicines related to the condition leading to admission. Plan A's 60-day window covers MRI and specialist consultations done weeks before surgery."
+    },
+    {
+      "benefit_name": "Post-Hospitalisation Coverage",
+      "planA": "90 days",
+      "planB": "60 days",
+      "notes": "Follow-up consultations, physiotherapy, medicines after discharge. Plan A's 90-day window is more generous."
+    },
+    {
+      "benefit_name": "Day Care Procedures",
+      "planA": "Covered",
+      "planB": "Covered",
+      "notes": "Arthroscopic ACL surgery often performed as day care. Both plans cover it."
+    },
+    {
+      "benefit_name": "Cashless Hospitalisation",
+      "planA": "Available at 10,000+ network hospitals",
+      "planB": "Available at 8,000+ network hospitals",
+      "notes": "Both plans offer cashless. Hospital bills sent directly to insurer."
+    },
+    {
+      "benefit_name": "Pre-Auth Turnaround",
+      "planA": "1 hour (IRDAI mandate)",
+      "planB": "30 minutes (insurer commitment)",
+      "notes": "IRDAI mandates 1-hour cashless authorisation for all insurers. Plan B's insurer has committed to 30-minute turnaround as a competitive differentiator."
+    },
+    {
+      "benefit_name": "Non-Network Reimbursement",
+      "planA": "80% of admissible, room rent capped ₹5,000/day",
+      "planB": "75% of admissible minus 10% copay, room rent capped ₹3,000/day",
+      "notes": "Non-network usage is significantly penalised in Plan B due to both lower coinsurance and co-payment."
+    },
+    {
+      "benefit_name": "Claim Settlement Timeline",
+      "planA": "30 days (IRDAI mandate)",
+      "planB": "30 days (IRDAI mandate)",
+      "notes": "IRDAI mandates settlement or rejection within 30 days of receiving all documents. 2% above bank rate interest on delays."
+    },
+    {
+      "benefit_name": "No-Claim Bonus",
+      "planA": "10% of sum insured per claim-free year, up to 100%",
+      "planB": "5% of sum insured per claim-free year, up to 50%",
+      "notes": "Reward for not claiming. Plan A accumulates bonus faster. Bonus increases sum insured without extra premium."
+    },
+    {
+      "benefit_name": "Policy Renewal",
+      "planA": "Lifetime (IRDAI mandate)",
+      "planB": "Lifetime (IRDAI mandate)",
+      "notes": "IRDAI 2024 Master Circular mandates lifetime renewal for all health insurance policies. Cannot be refused except for proven fraud."
+    }
+  ]
+}

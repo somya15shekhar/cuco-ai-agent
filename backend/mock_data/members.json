@@ -1,0 +1,110 @@
+{
+  "description": "Mock member records for the DuCO-Agent project. Aarav and Priya are married and share both insurance plans.",
+  "members": [
+    {
+      "member_id": "MBR001",
+      "name": "Aarav Sharma",
+      "age": 32,
+      "gender": "Male",
+      "abha_id": "ABHA-MOCK-1001",
+      "relationship": "Primary Policyholder",
+      "policies": [
+        {
+          "plan_id": "planA",
+          "insurer": "Insurer1",
+          "plan_name": "SecureHealth Premier",
+          "policy_number": "INS1-2024-00123",
+          "member_type": "primary",
+          "start_date": "2023-04-01",
+          "renewal_date": "2025-03-31",
+          "sum_insured_inr": 1000000,
+          "deductible_met_ytd_inr": 0,
+          "oop_paid_ytd_inr": 0,
+          "no_claim_bonus_percent": 10,
+          "status": "active"
+        },
+        {
+          "plan_id": "planB",
+          "insurer": "Insurer2",
+          "plan_name": "FlexiCare Plus",
+          "policy_number": "INS2-2024-00456",
+          "member_type": "primary",
+          "start_date": "2022-06-01",
+          "renewal_date": "2025-05-31",
+          "sum_insured_inr": 500000,
+          "deductible_met_ytd_inr": 0,
+          "oop_paid_ytd_inr": 0,
+          "no_claim_bonus_percent": 5,
+          "status": "active"
+        }
+      ],
+      "current_claim": {
+        "claim_id": "CLM-AARAV-001",
+        "claim_type": "surgery",
+        "diagnosis": "ACL tear and medial meniscus damage, left knee",
+        "icd10_codes": ["M23.619", "M23.200"],
+        "cpt_codes": ["29888", "29881"],
+        "hospital": "City Orthopaedic Hospital (Network - both insurers)",
+        "admission_type": "planned",
+        "total_estimated_bill_inr": 450000,
+        "primary_insurer_for_this_claim": "planB",
+        "secondary_insurer_for_this_claim": "planA",
+        "preauth_status_planA": "pending",
+        "preauth_status_planB": "pending"
+      }
+    },
+    {
+      "member_id": "MBR002",
+      "name": "Priya Sharma",
+      "age": 30,
+      "gender": "Female",
+      "abha_id": "ABHA-MOCK-1002",
+      "relationship": "Spouse of MBR001",
+      "policies": [
+        {
+          "plan_id": "planA",
+          "insurer": "Insurer1",
+          "plan_name": "SecureHealth Premier",
+          "policy_number": "INS1-2024-00123",
+          "member_type": "dependent",
+          "floater_shared_with": "MBR001",
+          "sum_insured_shared_inr": 1000000,
+          "deductible_met_ytd_inr": 0,
+          "oop_paid_ytd_inr": 0,
+          "status": "active",
+          "notes": "Priya is added as dependent on Aarav's Plan A family floater policy."
+        },
+        {
+          "plan_id": "planB",
+          "insurer": "Insurer2",
+          "plan_name": "FlexiCare Plus",
+          "policy_number": "INS2-2024-00789",
+          "member_type": "primary",
+          "start_date": "2023-01-01",
+          "renewal_date": "2025-12-31",
+          "sum_insured_inr": 500000,
+          "deductible_met_ytd_inr": 0,
+          "oop_paid_ytd_inr": 0,
+          "no_claim_bonus_percent": 0,
+          "status": "active",
+          "notes": "Priya holds her own individual Plan B policy. She is not a dependent on Aarav's Plan B."
+        }
+      ],
+      "current_claim": {
+        "claim_id": "CLM-PRIYA-001",
+        "claim_type": "physical_therapy",
+        "diagnosis": "Post-operative physiotherapy following right knee meniscus repair",
+        "icd10_codes": ["Z96.651", "M23.200"],
+        "cpt_codes": ["97161", "97110"],
+        "provider": "ActiveRehab Physiotherapy Clinic (Network - Plan A, non-network - Plan B)",
+        "admission_type": "outpatient_post_discharge",
+        "total_estimated_bill_inr": 30000,
+        "primary_insurer_for_this_claim": "planA",
+        "secondary_insurer_for_this_claim": "planB",
+        "preauth_status_planA": "not_required",
+        "preauth_status_planB": "not_required",
+        "notes": "PT sessions were recommended by surgeon following Priya's own meniscus procedure (separate claim not modelled here). Her PT provider is in Plan A's network but not Plan B's network."
+      }
+    }
+  ]
+}

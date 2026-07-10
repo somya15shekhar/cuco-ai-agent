@@ -1,0 +1,99 @@
+{
+  "description": "Pre-authorisation rules for Insurer1 (Plan A) and Insurer2 (Plan B). Governs which procedures require prior approval before treatment.",
+  "regulatory_basis": "IRDAI Master Circular on Health Insurance Business, 29 May 2024 (IRDAI/HLT/CIR/PRO/84/5/2024). Cashless authorisation within 1 hour mandatory for all IRDAI-registered insurers.",
+
+  "global_rules": {
+    "emergency_preauth": "Not required pre-admission. Hospital must intimate insurer within 24 hours of emergency admission. Cashless authorisation issued within 1 hour of receiving all documents.",
+    "planned_preauth_lead_time_hours": 48,
+    "irdai_cashless_turnaround_hours": 1,
+    "irdai_discharge_approval_hours": 3,
+    "denial_right_to_appeal": "Policyholder may appeal pre-auth denial to the insurer's grievance cell within 15 days. If unresolved, escalate to IRDAI Bima Bharosa portal or Insurance Ombudsman.",
+    "source": "IRDAI Master Circular 29 May 2024. IRDAI Bima Bharosa: https://bimabharosa.irdai.gov.in"
+  },
+
+  "planA": {
+    "insurer": "Insurer1",
+    "plan_name": "SecureHealth Premier",
+    "preauth_required_cpt_codes": ["29888", "29881"],
+    "preauth_required_categories": [
+      "All planned surgeries exceeding ₹1,00,000 estimated cost",
+      "Orthopaedic surgeries (knee, hip, spine)",
+      "Cardiac procedures",
+      "Organ transplants",
+      "Bariatric surgery",
+      "Cancer treatment (chemotherapy, radiation)",
+      "Joint replacement (hip, knee)"
+    ],
+    "preauth_not_required": [
+      "Emergency admissions (post-admission intimation within 24 hours)",
+      "Day care procedures estimated under ₹50,000",
+      "Physiotherapy reimbursement (post-discharge)",
+      "OPD consultations"
+    ],
+    "submission_process": {
+      "channel": ["Insurer mobile app", "TPA web portal", "Hospital help desk (at network hospitals)", "Email to preauth@insurer1.com"],
+      "lead_time_hours_before_admission": 48,
+      "documents_required": [
+        "Treating orthopaedic surgeon's referral letter with diagnosis",
+        "MRI report (not older than 3 months) confirming ACL tear / meniscus damage",
+        "Surgeon's estimated cost breakdown (surgeon fees, anaesthesia, hospital room, OT charges separately itemised)",
+        "Hospital admission date and expected duration",
+        "Patient health card and policy number",
+        "ABHA health ID (Ayushman Bharat Health Account) if available"
+      ],
+      "turnaround": "Within 1 hour of receiving complete documents (IRDAI mandate)",
+      "approval_validity_days": 30
+    },
+    "for_aarav_acl_surgery": {
+      "cpt_codes": ["29888", "29881"],
+      "preauth_required": true,
+      "clinical_justification_needed": "MRI report confirming Grade 3 ACL tear and meniscus damage. Surgeon's opinion that surgical intervention is medically necessary. Conservative treatment failure documentation if applicable.",
+      "estimated_approval_amount": "Subject to insurer assessment of reasonable and customary charges for the procedure in the geography.",
+      "notes": "Both CPT codes 29888 (ACL reconstruction) and 29881 (meniscectomy) require pre-auth from Plan A as they are planned orthopaedic surgeries exceeding ₹1L."
+    }
+  },
+
+  "planB": {
+    "insurer": "Insurer2",
+    "plan_name": "FlexiCare Plus",
+    "preauth_required_cpt_codes": ["29888", "29881"],
+    "preauth_required_categories": [
+      "All planned surgeries",
+      "Knee and joint surgeries",
+      "Maternity (elective caesarean)",
+      "Organ transplants",
+      "Implant-based procedures"
+    ],
+    "preauth_not_required": [
+      "Emergency admissions",
+      "Day care under ₹25,000",
+      "Post-discharge physiotherapy reimbursement",
+      "Diagnostics"
+    ],
+    "submission_process": {
+      "channel": ["Insurer helpline (1800-XXX-XXXX)", "Hospital insurance desk", "Insurer mobile app", "WhatsApp pre-auth channel"],
+      "lead_time_hours_before_admission": 48,
+      "documents_required": [
+        "General physician referral to orthopaedic specialist",
+        "Orthopaedic surgeon's recommendation for surgery",
+        "MRI report confirming injury",
+        "Estimated cost from hospital (room rent, surgeon, OT, implants separately)",
+        "Policy number and member ID",
+        "Previous treatment records if condition is chronic"
+      ],
+      "turnaround": "Within 30 minutes (insurer commitment, as per Niva Bupa-style service model). IRDAI mandates 1 hour maximum.",
+      "approval_validity_days": 21
+    },
+    "for_aarav_acl_surgery": {
+      "cpt_codes": ["29888", "29881"],
+      "preauth_required": true,
+      "role": "Secondary insurer for Aarav. Pre-auth from Plan B is still required even as secondary insurer, as the procedure is a planned surgery.",
+      "notes": "Plan B as secondary insurer will review primary insurer's pre-auth approval and settlement letter before processing its share of the claim."
+    },
+    "for_priya_pt_claim": {
+      "cpt_codes": ["97161", "97110"],
+      "preauth_required": false,
+      "notes": "Post-hospitalisation physiotherapy (CPT 97161 and 97110) does not require pre-authorisation from Plan B. Priya submits reimbursement claim with discharge summary and physiotherapy receipts after completing sessions."
+    }
+  }
+}
