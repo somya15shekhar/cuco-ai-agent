@@ -4,7 +4,7 @@ from app.models.claim import ParsedClaim, InsurancePlan, COBResult
 from app.agent.state import AgentState
 from app.services.eligibility import verify_eligibility
 from app.services.preauth import check_preauthorization
-from app.services.cob import calculate_cob
+from app.services.cob import calculate_cob, reconcile_ledger
 from app.services.llm import client
 from app.data_loader import load_member, load_plan
 
@@ -165,6 +165,15 @@ def cob_node(state: AgentState) -> Dict[str, Any]:
     # Artificial validation discrepancy on first attempt to demonstrate reflection loop
     if retry == 0:
         result.final_patient_responsibility += 100.0  # Simulate a math error of $100
+        result.patient_liability_covered += 100.0
+        result.total_patient_cost += 100.0
+        if result.explanation:
+            if "patient" in result.explanation:
+                result.explanation["patient"]["final_responsibility"] += 100.0
+                result.explanation["patient"]["patient_liability_covered"] += 100.0
+                result.explanation["patient"]["total_patient_cost"] += 100.0
+            if "ledger" in result.explanation:
+                result.explanation["ledger"]["patient_responsibility"] += 100.0
         result.is_valid = False
         result.validation_message = "Patient responsibility does not reconcile with payment breakdown."
         log.append("COBNode: Simulated mathematical discrepancy injected for testing reflection.")
@@ -180,15 +189,22 @@ def validation_node(state: AgentState) -> Dict[str, Any]:
     result = state["cob_result"]
     errors = []
     
-    # Ledger validation rule: Insurer Paid + Patient Paid + Uncovered Billed == Total Billed
-    calculated_total = (
-        result.primary_payment + 
-        result.secondary_payment + 
-        result.final_patient_responsibility + 
-        result.uncovered_amount
+    # Ledger validation check using reconcile_ledger
+    is_valid = reconcile_ledger(
+        total_billed=result.total_amount,
+        primary_payment=result.primary_payment,
+        secondary_payment=result.secondary_payment,
+        patient_responsibility=result.final_patient_responsibility,
+        uncovered_amount=result.uncovered_amount
     )
     
-    if abs(calculated_total - result.total_amount) > 0.01:
+    if not is_valid:
+        calculated_total = (
+            result.primary_payment + 
+            result.secondary_payment + 
+            result.final_patient_responsibility + 
+            result.uncovered_amount
+        )
         errors.append(
             f"Ledger Mismatch: Primary Payment ({result.primary_payment}) + Secondary Payment "
             f"({result.secondary_payment}) + Patient Responsibility ({result.final_patient_responsibility}) "
@@ -260,6 +276,15 @@ def output_node(state: AgentState) -> Dict[str, Any]:
     log = state.get("execution_log", []) + ["OutputNode: Claim processing completed successfully."]
     cob = state["cob_result"]
     claim = state["parsed_claim"]
+    primary = state["primary_plan"]
+    secondary = state["secondary_plan"]
+    
+    # Perform accumulator updates on the final successful result
+    from app.services.cob import update_accumulators
+    if primary:
+        update_accumulators(primary, cob.primary_deductible_applied, cob.primary_oop_contribution)
+    if secondary:
+        update_accumulators(secondary, cob.secondary_deductible_applied, cob.secondary_oop_contribution)
     
     final_output = {
         "claim_summary": {
@@ -277,17 +302,22 @@ def output_node(state: AgentState) -> Dict[str, Any]:
         },
         "patient_responsibility": {
             "final_patient_responsibility": cob.final_patient_responsibility,
+            "patient_liability_covered": cob.patient_liability_covered,
+            "uncovered_amount": cob.uncovered_amount,
+            "total_patient_cost": cob.total_patient_cost,
             "primary_deductible_applied": cob.primary_deductible_applied,
             "primary_coinsurance_patient": cob.primary_coinsurance_patient,
-            "primary_oop_applied": cob.primary_oop_applied,
+            "primary_oop_contribution": cob.primary_oop_contribution,
             "secondary_deductible_applied": cob.secondary_deductible_applied,
             "secondary_coinsurance_patient": cob.secondary_coinsurance_patient,
+            "secondary_oop_contribution": cob.secondary_oop_contribution,
         },
         "validation_status": {
             "is_valid": len(state.get("validation_errors", [])) == 0,
             "retry_count": state.get("retry_count", 0),
             "reflection_notes": state.get("reflection_notes"),
         },
+        "explanation": cob.explanation,
         "workflow_log": log
     }
     
@@ -295,3 +325,4 @@ def output_node(state: AgentState) -> Dict[str, Any]:
         "final_output": final_output,
         "execution_log": log
     }
+

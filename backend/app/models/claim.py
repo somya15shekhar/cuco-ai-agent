@@ -23,6 +23,7 @@ class ParsedClaim(BaseModel):
     secondary_insurer: str
     hospital: Optional[str] = None
     provider: Optional[str] = None
+    network_status: Dict[str, str] = Field(default_factory=dict)  # maps plan/insurer name or id to "IN" or "OUT"
 
 class COBResult(BaseModel):
     claim_id: str
@@ -31,12 +32,18 @@ class COBResult(BaseModel):
     uncovered_amount: float
     primary_deductible_applied: float
     primary_coinsurance_patient: float
-    primary_oop_applied: float
+    primary_oop_contribution: float
     primary_payment: float
     patient_responsibility_after_primary: float
     secondary_deductible_applied: float
     secondary_coinsurance_patient: float
+    secondary_oop_contribution: float = 0.0
     secondary_payment: float
+
     final_patient_responsibility: float
+    patient_liability_covered: float
+    total_patient_cost: float
     is_valid: bool = True
     validation_message: Optional[str] = None
+    explanation: Optional[Dict[str, Any]] = None
+

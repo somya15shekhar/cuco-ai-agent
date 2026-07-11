@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - cuCO Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+    <div class="ambient-blob blob-3"></div>
+
+    <div class="auth-view-container">
+        <div class="auth-card-split">
+            <div class="auth-info-panel">
+                <a href="index.html" class="logo" style="text-decoration: none;">
+                    <i class="fa-solid fa-house-medical-shield logo-icon"></i>
+                    <span class="logo-text">cuCO <span class="highlight">Agent</span></span>
+                </a>
+                <h2>Join the Adjudication Revolution</h2>
+                <p>Create an account to start processing claims with our AI-powered coordination of benefits engine.</p>
+                <ul class="auth-features">
+                    <li><i class="fa-solid fa-check"></i> Agentic Adjudication Engine</li>
+                    <li><i class="fa-solid fa-check"></i> Unified OCR & LLM Parsing</li>
+                    <li><i class="fa-solid fa-check"></i> Real-time Ledger Validation</li>
+                </ul>
+            </div>
+            
+            <div class="auth-form-panel">
+                <h3 id="auth-title">Create an Account</h3>
+                <p id="auth-subtitle" class="subtitle">Sign up to start adjudicating claims.</p>
+                
+                <form id="auth-form" class="auth-form">
+                    <input type="hidden" id="auth-mode" value="signup">
+                    <div class="input-group">
+                        <label for="auth-email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope field-icon"></i>
+                            <input type="email" id="auth-email" placeholder="name@company.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="auth-password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock field-icon"></i>
+                            <input type="password" id="auth-password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <div class="auth-actions">
+                        <button type="submit" id="btn-submit-auth" class="btn-primary w-full">Sign Up</button>
+                    </div>
+                </form>
+
+                <div class="auth-switch">
+                    <span id="auth-switch-text">Already have an account?</span>
+                    <a href="login.html" class="link-highlight">Log In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-circle-info toast-icon"></i>
+        <span id="toast-message">Notification message here</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

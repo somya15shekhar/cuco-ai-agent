@@ -39,7 +39,8 @@ aarav_claim = ParsedClaim(
     },
     primary_insurer="Plan B",
     secondary_insurer="Plan A",
-    hospital="City Orthopaedic Hospital (Network - both insurers)"
+    hospital="City Orthopaedic Hospital (Network - both insurers)",
+    network_status={"SecureHealth Premier": "IN", "FlexiCare Plus": "IN"}
 )
 
 aarav_result = run_cob_agent(aarav_claim)
@@ -62,7 +63,8 @@ priya_claim = ParsedClaim(
     },
     primary_insurer="Plan A",
     secondary_insurer="Plan B",
-    provider="ActiveRehab Physiotherapy Clinic (Network - Plan A, non-network - Plan B)"
+    provider="ActiveRehab Physiotherapy Clinic (Network - Plan A, non-network - Plan B)",
+    network_status={"SecureHealth Premier": "IN", "FlexiCare Plus": "OUT"}
 )
 
 priya_result = run_cob_agent(priya_claim)

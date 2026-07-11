@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cuCO Agent - AI Medical Adjudication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .landing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 4rem;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        .landing-nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-speed);
+        }
+        .nav-link:hover {
+            color: var(--color-primary);
+        }
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2" style="bottom: 10%; right: 10%;"></div>
+    <div class="ambient-blob blob-3" style="top: 20%; right: 30%;"></div>
+
+    <header class="landing-header">
+        <div class="logo">
+            <i class="fa-solid fa-house-medical-shield logo-icon"></i>
+            <span class="logo-text">cuCO <span class="highlight">Agent</span></span>
+        </div>
+        <nav class="landing-nav">
+            <a href="login.html" class="nav-link">Log In</a>
+            <a href="signup.html" class="btn-primary" style="text-decoration: none;">Get Started</a>
+        </nav>
+    </header>
+
+    <main class="hero-section">
+        <h1 class="hero-title">Automate Claims with <br><span class="highlight">Agentic AI</span></h1>
+        <p class="hero-subtitle">cuCO Agent uses advanced Language Models and multi-agent systems to automatically adjudicate medical claims, calculate coordination of benefits, and instantly reconcile financial ledgers.</p>
+        <div class="hero-cta">
+            <a href="signup.html" class="btn-primary" style="text-decoration: none; padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: 50px;">Start Adjudicating</a>
+            <a href="login.html" class="btn-accent" style="text-decoration: none; padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: 50px; background: rgba(255,255,255,0.1); box-shadow: none; border: 1px solid rgba(255,255,255,0.2);">Dashboard Login</a>
+        </div>
+    </main>
+</body>
+</html>

@@ -15,16 +15,103 @@ AARAV SHARMA CLAIM OUTPUT:
   },
   "patient_responsibility": {
     "final_patient_responsibility": 66250.0,
+    "patient_liability_covered": 66250.0,
+    "uncovered_amount": 0.0,
+    "total_patient_cost": 66250.0,
     "primary_deductible_applied": 25000.0,
     "primary_coinsurance_patient": 106250.0,
-    "primary_oop_applied": 131250.0,
+    "primary_oop_contribution": 131250.0,
     "secondary_deductible_applied": 50000.0,
-    "secondary_coinsurance_patient": 16250.0
+    "secondary_coinsurance_patient": 16250.0,
+    "secondary_oop_contribution": 66250.0
   },
   "validation_status": {
     "is_valid": true,
     "retry_count": 1,
-    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-AARAV-001 has failed validation due to a ledger mismatch. The calculated breakdown shows a total of Primary Payment, Secondary Payment, Patient Responsibility, and Uncovered Amount as $450100.0, which does not match the Total Billed amount of $450000.0. The discrepancy is $100.0.\n\nThe issue lies in the fact that the sum of the calculated payments and responsibilities ($450100.0) exceeds the Total Billed amount ($450000.0) by $100.0. This indicates that there is an error in the COB calculation, resulting in an overpayment of $100.0.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to ensure accurate calculations and reconciliation of the ledger. The retry process will help to identify and correct the mistake, providing a revised breakdown that accurately reflects the claim details and resolves the ledger mismatch."
+    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-AARAV-001 has failed validation due to a ledger mismatch. The calculated breakdown shows a total of Primary Payment, Secondary Payment, Patient Responsibility, and Uncovered Amount as $450100.0, which does not match the Total Billed amount of $450000.0. The discrepancy is $100.0.\n\nThe issue lies in the fact that the sum of the calculated payments and responsibilities ($450100.0) exceeds the Total Billed amount ($450000.0) by $100.0. This indicates that there is an error in the COB calculation, resulting in an overpayment of $100.0.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to ensure accurate calculations and reconciliation of the ledger. The retry process will help identify and correct the mistake, providing a revised breakdown that accurately reflects the claim details and resolves the ledger mismatch."
+  },
+  "explanation": {
+    "primary": {
+      "total_billed": 450000.0,
+      "allowed": 450000.0,
+      "uncovered_by_sub_limit": 0.0,
+      "deductible": 25000.0,
+      "coinsurance": 106250.0,
+      "copay": 0.0,
+      "paid": 318750.0,
+      "patient_liability": 131250.0,
+      "cpt_breakdown": [
+        {
+          "cpt_code": "29888",
+          "billed": 350000.0,
+          "allowed": 350000.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 25000.0,
+          "coinsurance": 81250.0,
+          "copay": 0.0,
+          "insurer_payment": 243750.0,
+          "patient_liability": 106250.0
+        },
+        {
+          "cpt_code": "29881",
+          "billed": 100000.0,
+          "allowed": 100000.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 0.0,
+          "coinsurance": 25000.0,
+          "copay": 0.0,
+          "insurer_payment": 75000.0,
+          "patient_liability": 25000.0
+        }
+      ]
+    },
+    "secondary": {
+      "residual_from_primary": 131250.0,
+      "allowed_residual": 131250.0,
+      "uncovered_by_sub_limit": 0.0,
+      "deductible": 50000.0,
+      "coinsurance": 16250.0,
+      "copay": 0.0,
+      "paid": 65000.0,
+      "patient_liability": 66250.0,
+      "cpt_breakdown": [
+        {
+          "cpt_code": "29888",
+          "residual_from_primary": 106250.0,
+          "allowed_residual": 106250.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 50000.0,
+          "coinsurance": 11250.0,
+          "copay": 0.0,
+          "insurer_payment": 45000.0,
+          "patient_liability": 61250.0
+        },
+        {
+          "cpt_code": "29881",
+          "residual_from_primary": 25000.0,
+          "allowed_residual": 25000.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 0.0,
+          "coinsurance": 5000.0,
+          "copay": 0.0,
+          "insurer_payment": 20000.0,
+          "patient_liability": 5000.0
+        }
+      ]
+    },
+    "patient": {
+      "final_responsibility": 66250.0,
+      "patient_liability_covered": 66250.0,
+      "uncovered_amount": 0.0,
+      "total_patient_cost": 66250.0
+    },
+    "ledger": {
+      "total_billed": 450000.0,
+      "primary_paid": 318750.0,
+      "secondary_paid": 65000.0,
+      "patient_responsibility": 66250.0,
+      "uncovered": 0.0
+    }
   },
   "workflow_log": [
     "IntakeNode: Initializing claims workflow from members.json.",
@@ -64,21 +151,112 @@ PRIYA SHARMA CLAIM OUTPUT:
   },
   "payment_breakdown": {
     "primary_insurer_payment": 0.0,
-    "secondary_insurer_payment": 3375.0,
-    "uncovered_amount": 0.0
+    "secondary_insurer_payment": 0.0,
+    "uncovered_amount": 10000.0
   },
   "patient_responsibility": {
-    "final_patient_responsibility": 26625.0,
+    "final_patient_responsibility": 20000.0,
+    "patient_liability_covered": 20000.0,
+    "uncovered_amount": 10000.0,
+    "total_patient_cost": 30000.0,
     "primary_deductible_applied": 30000.0,
     "primary_coinsurance_patient": 0.0,
-    "primary_oop_applied": 30000.0,
-    "secondary_deductible_applied": 25000.0,
-    "secondary_coinsurance_patient": 1625.0
+    "primary_oop_contribution": 30000.0,
+    "secondary_deductible_applied": 20000.0,
+    "secondary_coinsurance_patient": 0.0,
+    "secondary_oop_contribution": 20000.0
   },
   "validation_status": {
     "is_valid": true,
     "retry_count": 1,
-    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-PRIYA-001 has failed validation due to a ledger mismatch. The calculated breakdown shows a Primary Payment of $0.0, a Secondary Payment of $3375.0, an Uncovered Billed amount of $0.0, and a Patient Responsibility of $26725.0. \n\nWhen these amounts are summed, they total $30100.0 ($0.0 + $3375.0 + $26725.0 + $0.0), which does not match the Total Billed amount of $30000.0. This results in a discrepancy of $100.0.\n\nThe issue here is that the calculated payments and responsibilities exceed the total billed amount by $100.0, indicating an error in the COB calculation process. This discrepancy suggests that there might be an incorrect application of payment rules, incorrect data input, or an issue with the COB engine's logic.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to ensure accurate calculations and proper reconciliation of the ledger. The retry process should help identify and correct the source of the discrepancy, ensuring that the calculated breakdown accurately reflects the total billed amount."
+    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-PRIYA-001 has failed validation due to a ledger mismatch. The issue arises from the fact that the sum of the calculated breakdown components (Primary Payment, Secondary Payment, Patient Responsibility, and Uncovered Amount) equals $30100.0, which does not match the Total Billed amount of $30000.0. This discrepancy of $100.0 indicates that the ledger does not reconcile.\n\nThe cause of this mismatch is likely due to a calculation error or inconsistency within the COB engine. Since the calculations are deterministic, it is essential to re-run the COB engine to ensure accurate results.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to obtain a revised calculation that accurately reflects the claim details and reconciles the ledger. This will help identify and correct any underlying errors or inconsistencies, ensuring that the claim is processed correctly and the ledger is balanced."
+  },
+  "explanation": {
+    "primary": {
+      "total_billed": 30000.0,
+      "allowed": 30000.0,
+      "uncovered_by_sub_limit": 0.0,
+      "deductible": 30000.0,
+      "coinsurance": 0.0,
+      "copay": 0.0,
+      "paid": 0.0,
+      "patient_liability": 30000.0,
+      "cpt_breakdown": [
+        {
+          "cpt_code": "97161",
+          "billed": 10000.0,
+          "sub_limit": 30000.0,
+          "allowed": 10000.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 10000.0,
+          "coinsurance": 0.0,
+          "copay": 0.0,
+          "insurer_payment": 0.0,
+          "patient_liability": 10000.0
+        },
+        {
+          "cpt_code": "97110",
+          "billed": 20000.0,
+          "sub_limit": 30000.0,
+          "allowed": 20000.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 20000.0,
+          "coinsurance": 0.0,
+          "copay": 0.0,
+          "insurer_payment": 0.0,
+          "patient_liability": 20000.0
+        }
+      ]
+    },
+    "secondary": {
+      "residual_from_primary": 30000.0,
+      "allowed_residual": 20000.0,
+      "uncovered_by_sub_limit": 10000.0,
+      "deductible": 20000.0,
+      "coinsurance": 0.0,
+      "copay": 0.0,
+      "paid": 0.0,
+      "patient_liability": 30000.0,
+      "cpt_breakdown": [
+        {
+          "cpt_code": "97161",
+          "residual_from_primary": 10000.0,
+          "sub_limit": 20000.0,
+          "allowed_residual": 10000.0,
+          "uncovered_by_sub_limit": 0.0,
+          "deductible": 10000.0,
+          "coinsurance": 0.0,
+          "copay": 0.0,
+          "insurer_payment": 0.0,
+          "patient_liability": 10000.0
+        },
+        {
+          "cpt_code": "97110",
+          "residual_from_primary": 20000.0,
+          "sub_limit": 20000.0,
+          "allowed_residual": 10000.0,
+          "uncovered_by_sub_limit": 10000.0,
+          "deductible": 10000.0,
+          "coinsurance": 0.0,
+          "copay": 0.0,
+          "insurer_payment": 0.0,
+          "patient_liability": 20000.0
+        }
+      ]
+    },
+    "patient": {
+      "final_responsibility": 20000.0,
+      "patient_liability_covered": 20000.0,
+      "uncovered_amount": 10000.0,
+      "total_patient_cost": 30000.0
+    },
+    "ledger": {
+      "total_billed": 30000.0,
+      "primary_paid": 0.0,
+      "secondary_paid": 0.0,
+      "patient_responsibility": 20000.0,
+      "uncovered": 10000.0
+    }
   },
   "workflow_log": [
     "IntakeNode: Initializing claims workflow from members.json.",

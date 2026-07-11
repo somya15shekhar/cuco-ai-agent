@@ -97,4 +97,4 @@ Document:
         }
     except Exception as e:
         logger.error(f"Error during Groq API execution: {str(e)}")
-        raise RuntimeError(f"LLM extraction service failed: {str(e)}") from e
+        raise RuntimeError(f"LLM extraction service failed: {str(e)}") from e

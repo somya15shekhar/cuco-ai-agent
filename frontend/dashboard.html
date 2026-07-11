@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - cuCO Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="overflow: hidden;">
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+    <div class="ambient-blob blob-3"></div>
+
+    <div id="dashboard-view" class="dashboard-layout">
+        
+        <!-- SIDEBAR -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-house-medical-shield logo-icon"></i>
+                    <span class="logo-text">cuCO</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-target="adjudication-tab">
+                    <i class="fa-solid fa-shield-halved"></i> Adjudication
+                </a>
+                <a href="#" class="nav-item" data-target="eligibility-tab">
+                    <i class="fa-solid fa-clipboard-check"></i> Eligibility Check
+                </a>
+                <a href="#" class="nav-item" data-target="history-tab">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Claim History
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="user-profile" class="user-profile">
+                    <span id="user-email" class="user-email"></span>
+                    <button id="btn-logout" class="btn-logout btn-icon" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="app-main-content">
+            
+            <!-- TAB: ADJUDICATION (Existing) -->
+            <div id="adjudication-tab" class="tab-pane active">
+                <div class="dashboard-grid">
+
+            <!-- CLAIM CREATION SECTION -->
+            <section class="glass-card claim-creation">
+                <h3><i class="fa-solid fa-file-medical section-icon"></i> Create New Claim</h3>
+                <p class="section-desc">Initialize a new patient claim record in Supabase.</p>
+
+                <form id="claim-form">
+                    <div class="input-group">
+                        <label for="claim-patient-name">Patient Name</label>
+                        <input type="text" id="claim-patient-name" placeholder="e.g. Priya Sharma" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="claim-type">Claim Type</label>
+                        <select id="claim-type">
+                            <option value="surgery">Surgery / Inpatient</option>
+                            <option value="physiotherapy">Physiotherapy</option>
+                            <option value="consultation">Consultation</option>
+                            <option value="diagnostic">Diagnostic Imaging</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="claim-amount">Total Billed Amount (INR)</label>
+                        <div class="amount-input-wrapper">
+                            <span class="currency-symbol">₹</span>
+                            <input type="number" id="claim-amount" placeholder="30000" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="claim-primary">Primary Insurer</label>
+                            <select id="claim-primary">
+                                <option value="Plan A">SecureHealth Premier (Plan A)</option>
+                                <option value="Plan B">FlexiCare Plus (Plan B)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="claim-secondary">Secondary Insurer</label>
+                            <select id="claim-secondary">
+                                <option value="Plan B">FlexiCare Plus (Plan B)</option>
+                                <option value="Plan A">SecureHealth Premier (Plan A)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary w-full"><i class="fa-solid fa-plus-circle"></i> Create Claim Record</button>
+                </form>
+            </section>
+
+            <!-- DOCUMENT UPLOAD & PROCESS SECTION -->
+            <section class="glass-card doc-processing">
+                <h3><i class="fa-solid fa-cloud-arrow-up section-icon"></i> Adjudicate Claim Documents</h3>
+                <p class="section-desc">Upload a PDF or image invoice/report, parse metadata, and run the COB agent.</p>
+
+                <div class="input-group">
+                    <label for="upload-claim-select">Select Active Claim</label>
+                    <select id="upload-claim-select">
+                        <!-- Dynamically populated -->
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="upload-doc-type">Document Type</label>
+                    <select id="upload-doc-type">
+                        <option value="mri_report">MRI Report / Lab Invoice</option>
+                        <option value="estimate">Surgeon Estimate</option>
+                        <option value="physio_invoice">Physiotherapy Invoice</option>
+                        <option value="discharge_summary">Discharge Summary</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Upload Document File</label>
+                    <div id="dropzone" class="dropzone">
+                        <i class="fa-solid fa-file-pdf dropzone-icon"></i>
+                        <p class="dropzone-text">Drag & drop your PDF or image here, or <span>browse files</span></p>
+                        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.txt" class="hidden">
+                    </div>
+                    <div id="selected-file-info" class="selected-file-info hidden">
+                        <i class="fa-solid fa-circle-check info-icon"></i>
+                        <span id="selected-file-name" class="info-text"></span>
+                        <button type="button" id="btn-clear-file" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+
+                <button id="btn-process" class="btn-accent w-full" disabled>
+                    <i class="fa-solid fa-gears"></i> Adjudicate & Run Agent
+                </button>
+            </section>
+
+            <!-- PROCESSING LOADER -->
+            <div id="loading-overlay" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <h4 id="loading-status">Adjudicating claim...</h4>
+                <p id="loading-substatus">Parsing document with OCR & LLM...</p>
+            </div>
+
+            <!-- RESULTS SECTION -->
+            <section id="results-panel" class="glass-card span-cols results-panel hidden">
+                <div class="results-header">
+                    <h3><i class="fa-solid fa-shield-halved section-icon"></i> Adjudication Summary</h3>
+                    <div id="validation-badge" class="badge">Valid</div>
+                </div>
+
+                <div class="results-grid">
+                    <!-- Column 1: Financial Breakdown -->
+                    <div class="results-col">
+                        <h4>Financial Ledger</h4>
+                        <div class="ledger-row">
+                            <span class="ledger-label">Total Billed</span>
+                            <span id="val-total-billed" class="ledger-value">₹0.00</span>
+                        </div>
+                        <hr class="ledger-divider">
+                        <div class="ledger-row">
+                            <span class="ledger-label"><i class="fa-solid fa-building-columns primary-icon"></i> Primary Insurer Paid</span>
+                            <span id="val-primary-paid" class="ledger-value text-green">₹0.00</span>
+                        </div>
+                        <div class="ledger-row">
+                            <span class="ledger-label"><i class="fa-solid fa-building-columns secondary-icon"></i> Secondary Insurer Paid</span>
+                            <span id="val-secondary-paid" class="ledger-value text-green">₹0.00</span>
+                        </div>
+                        <hr class="ledger-divider">
+                        <div class="ledger-row highlight-liability">
+                            <span class="ledger-label"><i class="fa-solid fa-user-tag text-purple"></i> Patient Responsibility</span>
+                            <span id="val-patient-liability" class="ledger-value text-purple font-bold">₹0.00</span>
+                        </div>
+                        <div class="ledger-sub-row">
+                            <span class="sub-label">Covered Portion</span>
+                            <span id="val-patient-covered" class="sub-value">₹0.00</span>
+                        </div>
+                        <div class="ledger-sub-row">
+                            <span class="sub-label">Uncovered Sub-limits / Exclusions</span>
+                            <span id="val-patient-uncovered" class="sub-value text-orange">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Agent Explanation -->
+                    <div class="results-col">
+                        <h4>Agent Explanation & Validation Notes</h4>
+                        <div id="agent-explanation-box" class="explanation-box">
+                            No agent feedback available.
+                        </div>
+                        <div id="agent-validation-box" class="validation-box">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Execution Timeline / Log -->
+                <div class="timeline-section">
+                    <h4>Agent Execution Timeline</h4>
+                    <div id="execution-timeline" class="timeline">
+                        <!-- Dynamically filled timeline items -->
+                    </div>
+                </div>
+
+                <!-- Collapsible Raw JSON -->
+                <div class="raw-json-section">
+                    <button id="btn-toggle-json" class="btn-text-toggle">
+                        Show Raw JSON Output <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <pre id="raw-json-output" class="raw-json hidden">
+                        <!-- Formatted json will go here -->
+                    </pre>
+                </div>
+            </section>
+        
+
+    
+                </div>
+            </div>
+
+            <!-- TAB: ELIGIBILITY -->
+            <div id="eligibility-tab" class="tab-pane hidden">
+                <section class="glass-card">
+                    <h3><i class="fa-solid fa-clipboard-check section-icon"></i> Eligibility & Pre-Auth Checker</h3>
+                    <p class="section-desc">Verify CPT codes against a patient's insurance plan.</p>
+                    
+                    <form id="eligibility-form" class="mt-4">
+                        <div class="input-group">
+                            <label for="eligibility-insurer">Select Insurer Plan</label>
+                            <select id="eligibility-insurer">
+                                <option value="Plan A">SecureHealth Premier (Plan A)</option>
+                                <option value="Plan B">FlexiCare Plus (Plan B)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="eligibility-cpt">CPT Codes (Comma Separated)</label>
+                            <input type="text" id="eligibility-cpt" placeholder="e.g. 99213, 73721" required>
+                        </div>
+                        <div class="form-row mt-4">
+                            <button type="button" id="btn-check-eligibility" class="btn-primary"><i class="fa-solid fa-check"></i> Check Eligibility</button>
+                            <button type="button" id="btn-check-preauth" class="btn-accent"><i class="fa-solid fa-file-signature"></i> Check Pre-Auth</button>
+                        </div>
+                    </form>
+
+                    <div id="eligibility-results" class="results-panel hidden mt-4">
+                        <h4>Results</h4>
+                        <div id="eligibility-output" class="explanation-box mt-2"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB: HISTORY -->
+            <div id="history-tab" class="tab-pane hidden">
+                <section class="glass-card">
+                    <h3><i class="fa-solid fa-clock-rotate-left section-icon"></i> Claim History</h3>
+                    <p class="section-desc">View all submitted claims.</p>
+                    
+                    <div class="table-container mt-4">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Patient</th>
+                                    <th>Claim Type</th>
+                                    <th>Total Billed</th>
+                                    <th>Primary Insurer</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    
+    
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-circle-info toast-icon"></i>
+        <span id="toast-message">Notification message here</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
