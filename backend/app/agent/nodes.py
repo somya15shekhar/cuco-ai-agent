@@ -274,11 +274,58 @@ DO NOT recalculate the figures yourself (calculations must remain deterministic)
 def output_node(state: AgentState) -> Dict[str, Any]:
     """Generates the structured JSON outputs from the state."""
     log = state.get("execution_log", []) + ["OutputNode: Claim processing completed successfully."]
-    cob = state["cob_result"]
+    cob = state.get("cob_result")
     claim = state["parsed_claim"]
-    primary = state["primary_plan"]
-    secondary = state["secondary_plan"]
+    primary = state.get("primary_plan")
+    secondary = state.get("secondary_plan")
     
+    if cob is None:
+        eligibility = state.get("eligibility_status") or {}
+        reason = "Claim is ineligible (uncovered or empty CPT codes)."
+        if eligibility and not eligibility.get("is_eligible", False):
+            reason = f"Claim is ineligible. CPT codes checked: {claim.cpt_codes or 'None'}."
+            
+        final_output = {
+            "claim_summary": {
+                "claim_id": claim.claim_id,
+                "patient_name": claim.patient_name,
+                "diagnosis": claim.diagnosis,
+                "total_billed": claim.total_amount,
+                "primary_insurer": claim.primary_insurer,
+                "secondary_insurer": claim.secondary_insurer,
+            },
+            "payment_breakdown": {
+                "primary_insurer_payment": 0.0,
+                "secondary_insurer_payment": 0.0,
+                "uncovered_amount": claim.total_amount,
+            },
+            "patient_responsibility": {
+                "final_patient_responsibility": claim.total_amount,
+                "patient_liability_covered": 0.0,
+                "uncovered_amount": claim.total_amount,
+                "total_patient_cost": claim.total_amount,
+                "primary_deductible_applied": 0.0,
+                "primary_coinsurance_patient": 0.0,
+                "primary_oop_contribution": 0.0,
+                "secondary_deductible_applied": 0.0,
+                "secondary_coinsurance_patient": 0.0,
+                "secondary_oop_contribution": 0.0,
+            },
+            "validation_status": {
+                "is_valid": False,
+                "retry_count": state.get("retry_count", 0),
+                "reflection_notes": reason,
+            },
+            "explanation": {
+                "general_notes": reason
+            },
+            "workflow_log": log
+        }
+        return {
+            "final_output": final_output,
+            "execution_log": log
+        }
+
     # Perform accumulator updates on the final successful result
     from app.services.cob import update_accumulators
     if primary:

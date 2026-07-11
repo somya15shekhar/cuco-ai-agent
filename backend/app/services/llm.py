@@ -44,6 +44,17 @@ You are an AI medical insurance document parser.
 
 Extract the following fields from the document.
 
+Mapping Instructions for CPT and ICD-10 Codes:
+If CPT or ICD-10 codes are not explicitly written as numbers in the document text, you must infer and map common medical descriptions to their standard codes:
+- "Physical Therapy Evaluation", "Assessment", or "PT evaluation" -> CPT code "97161"
+- "Therapeutic Exercise", "Physiotherapy session", or "PT session" -> CPT code "97110"
+- "ACL Reconstruction", "ACL Tear Surgery", or "Knee arthroscopy" -> CPT code "29888"
+- "Meniscectomy", "Meniscus Repair", or "Meniscus Surgery" -> CPT code "29881"
+
+- ACL tear / ligament damage -> ICD-10 code "M23.619"
+- Meniscus tear / meniscus damage -> ICD-10 code "M23.200"
+- Post-operative knee surgery recovery -> ICD-10 code "Z96.651"
+
 Return ONLY valid JSON.
 
 {{

@@ -168,6 +168,18 @@ async function loadClaims() {
 addSafeListener('claim-form', 'submit', async (e) => {
     e.preventDefault();
     
+    // Retrieve current session or fall back to client retrieval
+    let session = currentSession;
+    if (!session) {
+        const { data } = await supabaseClient.auth.getSession();
+        session = data?.session;
+    }
+    
+    if (!session || !session.user) {
+        showToast('You must be logged in to create a claim.', 'error');
+        return;
+    }
+
     const patientName = getEl('claim-patient-name').value;
     const claimType = getEl('claim-type').value;
     const totalAmount = parseFloat(getEl('claim-amount').value);
@@ -175,6 +187,7 @@ addSafeListener('claim-form', 'submit', async (e) => {
     const secondaryInsurer = getEl('claim-secondary').value;
 
     const payload = {
+        user_id: session.user.id,
         patient_name: patientName,
         claim_type: claimType,
         total_amount: totalAmount,
@@ -189,7 +202,10 @@ addSafeListener('claim-form', 'submit', async (e) => {
             body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error('Backend failed to create claim');
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Backend failed to create claim: ${res.status} - ${errorText}`);
+        }
 
         const resultData = await res.json();
         showToast(`Claim successfully created!`, 'success');
@@ -290,7 +306,10 @@ addSafeListener('btn-process', 'click', async () => {
         uploadForm.append('file', selectedFile);
 
         const uploadRes = await fetch(`${BACKEND_URL}/upload`, { method: 'POST', body: uploadForm });
-        if (!uploadRes.ok) throw new Error('Upload failed');
+        if (!uploadRes.ok) {
+            const errorText = await uploadRes.text();
+            throw new Error(`Upload failed: ${uploadRes.status} - ${errorText}`);
+        }
 
         setLoadingStatus('Parsing claim contents...', 'Running OCR & structured extraction via Groq...');
         const parseForm = new FormData();
@@ -298,7 +317,10 @@ addSafeListener('btn-process', 'click', async () => {
         parseForm.append('file', selectedFile);
 
         const parseRes = await fetch(`${BACKEND_URL}/parse`, { method: 'POST', body: parseForm });
-        if (!parseRes.ok) throw new Error('Document parsing failed');
+        if (!parseRes.ok) {
+            const errorText = await parseRes.text();
+            throw new Error(`Document parsing failed: ${parseRes.status} - ${errorText}`);
+        }
 
         setLoadingStatus('Assembling claim context...', 'Loading parsed parameters from database...');
         const { data: parsedRows, error: parsedErr } = await supabaseClient

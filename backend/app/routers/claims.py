@@ -4,12 +4,14 @@ from app.database import supabase
 
 router = APIRouter(prefix="/claims", tags=["Claims"])
 
+@router.post("")
 @router.post("/")
 def create_claim(claim: ClaimCreate):
 
     response = (
         supabase.table("claims")
         .insert({
+            "user_id": claim.user_id,
             "patient_name": claim.patient_name,
             "claim_type": claim.claim_type,
             "primary_insurer": claim.primary_insurer,

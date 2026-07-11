@@ -110,12 +110,12 @@ def adjudicate_primary(claim: ParsedClaim, plan: InsurancePlan, network_status: 
 
     # Distribute total billed across CPTs
     if claim.billed_amounts:
-        cpt_amounts = dict(claim.billed_amounts)
+        cpt_amounts = list(claim.billed_amounts.items())
     elif claim.cpt_codes:
         avg = claim.total_amount / len(claim.cpt_codes)
-        cpt_amounts = {c: avg for c in claim.cpt_codes}
+        cpt_amounts = [(c, avg) for c in claim.cpt_codes]
     else:
-        cpt_amounts = {"UNKNOWN": claim.total_amount}
+        cpt_amounts = [("UNKNOWN", claim.total_amount)]
 
     # Initialise running accumulators
     accumulated_pt = 0.0
@@ -129,7 +129,7 @@ def adjudicate_primary(claim: ParsedClaim, plan: InsurancePlan, network_status: 
     totals = dict(billed=0.0, allowed=0.0, uncov_sub=0.0, ded=0.0, coins=0.0,
                   copay=0.0, paid=0.0, pat=0.0)
 
-    for cpt_code, billed in cpt_amounts.items():
+    for cpt_code, billed in cpt_amounts:
         is_covered = cpt_code in plan.covered_cpt_codes
         if not is_covered:
             cpt_details.append(PrimaryCPTResult(

@@ -4,6 +4,7 @@ from postgrest.exceptions import APIError
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
+@router.post("")
 @router.post("/")
 async def upload_document(
     claim_id: str = Form(...),

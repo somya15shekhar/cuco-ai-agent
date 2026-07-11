@@ -113,3 +113,16 @@ Validates endpoint uploads and Supabase metadata insertion.
 ```bash
 python test_endpoint.py
 ```
+
+---
+
+## 🛠️ Recent Improvements & Fixes
+
+1. **Robust Endpoint Routing (Trailing Slashes)**:
+   - Backend routes `/claims`, `/upload`, and `/parse` now support both trailing slashes (e.g. `/claims/`) and non-trailing slashes (e.g. `/claims`) directly, resolving previous CORS/Redirect `405 Method Not Allowed` issues.
+2. **Authenticated Claim Records**:
+   - Integrated `user_id` validation and storage into the claim schema and endpoint, ensuring newly created claims are correctly associated with the active Supabase user session.
+3. **Graceful Skipped Claim Adjudication**:
+   - The adjudication pipeline now handles ineligible or pre-auth skipped claims gracefully without crashing (e.g., if CPT codes are empty).
+4. **Intelligent CPT/ICD Code Mapping**:
+   - Unified document parsing now automatically infers and maps text descriptions (e.g. "Physical Therapy Evaluation", "ACL reconstruction") to standard insurance codes (e.g. CPT `97161`, CPT `29888`) if the numbers are not explicitly printed in the invoice.

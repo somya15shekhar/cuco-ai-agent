@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/parse", tags=["Parse"])
 
 
+@router.post("")
 @router.post("/")
 async def parse_claim_document(
     claim_id: str = Form(...),
@@ -96,12 +97,12 @@ async def parse_claim_document(
             "parsed_json": structured_json
         }
 
-        # 5. Insert parsed claim metadata into Supabase
-        db_response = supabase.table("parsed_claims").insert(payload).execute()
+        # 5. Upsert parsed claim metadata into Supabase to handle re-adjudications gracefully
+        db_response = supabase.table("parsed_claims").upsert(payload, on_conflict="claim_id").execute()
         if not db_response.data:
             raise HTTPException(
                 status_code=500,
-                detail="Successfully inserted parsed data, but no verification data was returned."
+                detail="Successfully upserted parsed data, but no verification data was returned."
             )
 
         return {"status": "success"}
