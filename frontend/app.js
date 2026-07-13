@@ -403,6 +403,22 @@ function setLoadingStatus(status, substatus) {
 // 5. Results Rendering UI Component Logic
 // ==========================================================================
 
+// Safe Element Manipulation Helpers to prevent crashes on cached page loads
+function setElText(id, text) {
+    const el = getEl(id);
+    if (el) el.textContent = text;
+}
+
+function setElHtml(id, html) {
+    const el = getEl(id);
+    if (el) el.innerHTML = html;
+}
+
+function setElClass(id, className) {
+    const el = getEl(id);
+    if (el) el.className = className;
+}
+
 function renderAdjudicationResults(output) {
     const resultsPanel = getEl('results-panel');
     if (!resultsPanel) return;
@@ -418,21 +434,23 @@ function renderAdjudicationResults(output) {
     const secExp = explanation.secondary || {};
 
     const validationBadge = getEl('validation-badge');
-    if (validation.is_valid) {
-        validationBadge.textContent = 'Reconciliation Valid';
-        validationBadge.className = 'badge valid';
-    } else {
-        validationBadge.textContent = 'Ledger Discrepancy';
-        validationBadge.className = 'badge invalid';
+    if (validationBadge) {
+        if (validation.is_valid) {
+            validationBadge.textContent = 'Reconciliation Valid';
+            validationBadge.className = 'badge valid';
+        } else {
+            validationBadge.textContent = 'Ledger Discrepancy';
+            validationBadge.className = 'badge invalid';
+        }
     }
 
     // Populate Context Header
     let primaryName = summary.primary_insurer === "Plan A" ? "SecureHealth Premier" : "FlexiCare Plus";
     let secondaryName = summary.secondary_insurer === "Plan A" ? "SecureHealth Premier" : "FlexiCare Plus";
     
-    getEl('info-patient-name').textContent = summary.patient_name || '-';
-    getEl('info-household-name').textContent = activeHousehold ? activeHousehold.household.household_name : 'Sharma Family';
-    getEl('info-diagnosis').textContent = summary.diagnosis || 'ACL Tear Surgery';
+    setElText('info-patient-name', summary.patient_name || '-');
+    setElText('info-household-name', activeHousehold ? activeHousehold.household.household_name : 'Sharma Family');
+    setElText('info-diagnosis', summary.diagnosis || 'ACL Tear Surgery');
     
     // Find active claim type from selection
     const uploadClaimSelect = getEl('upload-claim-select');
@@ -443,44 +461,44 @@ function renderAdjudicationResults(output) {
         else if (claimText.includes('(consultation)')) selectedClaimType = 'Consultation';
         else if (claimText.includes('(diagnostic)')) selectedClaimType = 'Diagnostic';
     }
-    getEl('info-claim-type').textContent = selectedClaimType;
-    getEl('info-billed-amount').textContent = formatCurrency(summary.total_billed);
-    getEl('info-primary-insurer').textContent = primaryName;
-    getEl('info-secondary-insurer').textContent = secondaryName;
-    getEl('info-claim-status').textContent = validation.is_valid ? 'Validated' : 'Discrepancy';
-    getEl('info-claim-status').className = validation.is_valid ? 'text-green font-bold' : 'text-orange font-bold';
+    setElText('info-claim-type', selectedClaimType);
+    setElText('info-billed-amount', formatCurrency(summary.total_billed));
+    setElText('info-primary-insurer', primaryName);
+    setElText('info-secondary-insurer', secondaryName);
+    setElText('info-claim-status', validation.is_valid ? 'Validated' : 'Discrepancy');
+    setElClass('info-claim-status', validation.is_valid ? 'text-green font-bold' : 'text-orange font-bold');
 
     // Populate Visual Flow
-    getEl('flow-hospital-bill').textContent = formatCurrency(summary.total_billed);
-    getEl('flow-primary-paid').textContent = formatCurrency(breakdown.primary_insurer_payment);
-    getEl('flow-remaining-balance').textContent = formatCurrency(summary.total_billed - breakdown.primary_insurer_payment);
-    getEl('flow-secondary-paid').textContent = formatCurrency(breakdown.secondary_insurer_payment);
-    getEl('flow-patient-liability').textContent = formatCurrency(patientResp.total_patient_cost);
+    setElText('flow-hospital-bill', formatCurrency(summary.total_billed));
+    setElText('flow-primary-paid', formatCurrency(breakdown.primary_insurer_payment));
+    setElText('flow-remaining-balance', formatCurrency(summary.total_billed - breakdown.primary_insurer_payment));
+    setElText('flow-secondary-paid', formatCurrency(breakdown.secondary_insurer_payment));
+    setElText('flow-patient-liability', formatCurrency(patientResp.total_patient_cost));
 
     // Populate Ledger Rows
-    getEl('val-total-billed').textContent = formatCurrency(summary.total_billed);
-    getEl('val-primary-paid').textContent = formatCurrency(breakdown.primary_insurer_payment);
-    getEl('val-secondary-paid').textContent = formatCurrency(breakdown.secondary_insurer_payment);
-    getEl('val-patient-liability').textContent = formatCurrency(patientResp.total_patient_cost);
-    getEl('val-patient-covered').textContent = formatCurrency(patientResp.patient_liability_covered);
-    getEl('val-patient-uncovered').textContent = formatCurrency(patientResp.uncovered_amount);
+    setElText('val-total-billed', formatCurrency(summary.total_billed));
+    setElText('val-primary-paid', formatCurrency(breakdown.primary_insurer_payment));
+    setElText('val-secondary-paid', formatCurrency(breakdown.secondary_insurer_payment));
+    setElText('val-patient-liability', formatCurrency(patientResp.total_patient_cost));
+    setElText('val-patient-covered', formatCurrency(patientResp.patient_liability_covered));
+    setElText('val-patient-uncovered', formatCurrency(patientResp.uncovered_amount));
 
     // Populate Dynamic Calculations Toggles
-    getEl('calc-details-primary').innerHTML = `
+    setElHtml('calc-details-primary', `
         <div class="calc-details-row"><span>Billed Amount</span><span>${formatCurrency(primExp.total_billed || summary.total_billed)}</span></div>
         <div class="calc-details-row"><span>Allowed Amount</span><span>${formatCurrency(primExp.allowed || summary.total_billed)}</span></div>
         <div class="calc-details-row"><span>Deductible Applied</span><span>-${formatCurrency(primExp.deductible || 0.0)}</span></div>
         <div class="calc-details-row"><span>Patient Coinsurance</span><span>-${formatCurrency(primExp.coinsurance || 0.0)}</span></div>
         <div class="calc-details-row font-bold"><span>Final Primary Paid</span><span>${formatCurrency(primExp.paid || breakdown.primary_insurer_payment)}</span></div>
-    `;
+    `);
 
-    getEl('calc-details-secondary').innerHTML = `
+    setElHtml('calc-details-secondary', `
         <div class="calc-details-row"><span>Residual from Primary</span><span>${formatCurrency(secExp.residual_from_primary || 0.0)}</span></div>
         <div class="calc-details-row"><span>Allowed Residual</span><span>${formatCurrency(secExp.allowed_residual || 0.0)}</span></div>
         <div class="calc-details-row"><span>Deductible Applied</span><span>-${formatCurrency(secExp.deductible || 0.0)}</span></div>
         <div class="calc-details-row"><span>Patient Coinsurance</span><span>-${formatCurrency(secExp.coinsurance || 0.0)}</span></div>
         <div class="calc-details-row font-bold"><span>Final Secondary Paid</span><span>${formatCurrency(secExp.paid || breakdown.secondary_insurer_payment)}</span></div>
-    `;
+    `);
 
     // Populate Plan Details
     const primKey = (summary.primary_insurer === "Plan A") ? "insurer1" : "insurer2";
@@ -498,7 +516,7 @@ function renderAdjudicationResults(output) {
     const primOopUsed = (primRules.oop_met || 0.0) + (patientResp.primary_oop_contribution || 0.0);
     const secOopUsed = (secRules.oop_met || 0.0) + (patientResp.secondary_oop_contribution || 0.0);
     
-    getEl('plan-details-primary-grid').innerHTML = `
+    setElHtml('plan-details-primary-grid', `
         <div class="detail-stat"><span>Plan Name</span><span>${primRules.plan_name || primaryName}</span></div>
         <div class="detail-stat"><span>Network Status</span><span>IN</span></div>
         <div class="detail-stat"><span>Total Deductible</span><span>${formatCurrency(primRules.deductible)}</span></div>
@@ -507,9 +525,9 @@ function renderAdjudicationResults(output) {
         <div class="detail-stat"><span>Coinsurance Rate</span><span>${(primRules.coinsurance_rate * 100).toFixed(0)}% / ${(100 - primRules.coinsurance_rate * 100).toFixed(0)}%</span></div>
         <div class="detail-stat"><span>Out-of-Pocket Max</span><span>${formatCurrency(primRules.oop_max)}</span></div>
         <div class="detail-stat"><span>Out-of-Pocket Used</span><span>${formatCurrency(primOopUsed)}</span></div>
-    `;
+    `);
 
-    getEl('plan-details-secondary-grid').innerHTML = `
+    setElHtml('plan-details-secondary-grid', `
         <div class="detail-stat"><span>Plan Name</span><span>${secRules.plan_name || secondaryName}</span></div>
         <div class="detail-stat"><span>Network Status</span><span>IN</span></div>
         <div class="detail-stat"><span>Total Deductible</span><span>${formatCurrency(secRules.deductible)}</span></div>
@@ -518,48 +536,50 @@ function renderAdjudicationResults(output) {
         <div class="detail-stat"><span>Coinsurance Rate</span><span>${(secRules.coinsurance_rate * 100).toFixed(0)}% / ${(100 - secRules.coinsurance_rate * 100).toFixed(0)}%</span></div>
         <div class="detail-stat"><span>Out-of-Pocket Max</span><span>${formatCurrency(secRules.oop_max)}</span></div>
         <div class="detail-stat"><span>Out-of-Pocket Used</span><span>${formatCurrency(secOopUsed)}</span></div>
-    `;
+    `);
 
     // Populate Structured Explanations
-    getEl('exp-prim-allowed').textContent = formatCurrency(primExp.allowed || summary.total_billed);
-    getEl('exp-prim-deductible').textContent = formatCurrency(primExp.deductible || 0.0);
-    getEl('exp-prim-coinsurance').textContent = formatCurrency(primExp.coinsurance || 0.0);
-    getEl('exp-prim-payment').textContent = formatCurrency(breakdown.primary_insurer_payment);
+    setElText('exp-prim-allowed', formatCurrency(primExp.allowed || summary.total_billed));
+    setElText('exp-prim-deductible', formatCurrency(primExp.deductible || 0.0));
+    setElText('exp-prim-coinsurance', formatCurrency(primExp.coinsurance || 0.0));
+    setElText('exp-prim-payment', formatCurrency(breakdown.primary_insurer_payment));
 
-    getEl('exp-sec-residual').textContent = formatCurrency(secExp.residual_from_primary || 0.0);
-    getEl('exp-sec-allowed').textContent = formatCurrency(secExp.allowed_residual || 0.0);
-    getEl('exp-sec-deductible').textContent = formatCurrency(secExp.deductible || 0.0);
-    getEl('exp-sec-payment').textContent = formatCurrency(breakdown.secondary_insurer_payment);
+    setElText('exp-sec-residual', formatCurrency(secExp.residual_from_primary || 0.0));
+    setElText('exp-sec-allowed', formatCurrency(secExp.allowed_residual || 0.0));
+    setElText('exp-sec-deductible', formatCurrency(secExp.deductible || 0.0));
+    setElText('exp-sec-payment', formatCurrency(breakdown.secondary_insurer_payment));
 
-    getEl('exp-pat-covered').textContent = formatCurrency(patientResp.patient_liability_covered);
-    getEl('exp-pat-uncovered').textContent = formatCurrency(patientResp.uncovered_amount);
-    getEl('exp-pat-total').textContent = formatCurrency(patientResp.total_patient_cost);
+    setElText('exp-pat-covered', formatCurrency(patientResp.patient_liability_covered));
+    setElText('exp-pat-uncovered', formatCurrency(patientResp.uncovered_amount));
+    setElText('exp-pat-total', formatCurrency(patientResp.total_patient_cost));
 
-    getEl('exp-val-retries').textContent = validation.retry_count || 0;
-    getEl('exp-val-reflection').textContent = validation.reflection_notes || 'Completed Successfully';
+    setElText('exp-val-retries', validation.retry_count || 0);
+    setElText('exp-val-reflection', validation.reflection_notes || 'Completed Successfully');
 
     // Populate Timeline
     const executionTimeline = getEl('execution-timeline');
-    executionTimeline.innerHTML = '';
-    log.forEach((logMessage) => {
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-        const dot = document.createElement('div');
-        dot.className = 'timeline-dot';
-        if (logMessage.includes('completed successfully') || logMessage.includes('OutputNode')) {
-            dot.classList.add('success');
-        } else {
-            dot.classList.add('active');
-        }
-        const content = document.createElement('div');
-        content.className = 'timeline-content';
-        content.textContent = logMessage;
-        item.appendChild(dot);
-        item.appendChild(content);
-        executionTimeline.appendChild(item);
-    });
+    if (executionTimeline) {
+        executionTimeline.innerHTML = '';
+        log.forEach((logMessage) => {
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            const dot = document.createElement('div');
+            dot.className = 'timeline-dot';
+            if (logMessage.includes('completed successfully') || logMessage.includes('OutputNode')) {
+                dot.classList.add('success');
+            } else {
+                dot.classList.add('active');
+            }
+            const content = document.createElement('div');
+            content.className = 'timeline-content';
+            content.textContent = logMessage;
+            item.appendChild(dot);
+            item.appendChild(content);
+            executionTimeline.appendChild(item);
+        });
+    }
 
-    getEl('raw-json-output').textContent = JSON.stringify(output, null, 2);
+    setElText('raw-json-output', JSON.stringify(output, null, 2));
 }
 
 addSafeListener('btn-toggle-json', 'click', () => {
