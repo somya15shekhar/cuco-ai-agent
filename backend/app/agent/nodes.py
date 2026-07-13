@@ -41,9 +41,36 @@ def _resolve_member(state: AgentState) -> Dict[str, Any]:
     member_id = member["id"]
     insurances = MemberService.get_member_insurance(member_id)
 
-    # First enrolment = primary for claims, second = secondary
-    prim_key = insurances[0]["insurer_key"] if len(insurances) > 0 else None
-    sec_key = insurances[1]["insurer_key"] if len(insurances) > 1 else None
+    # Match requested primary/secondary names to keys to respect IRDAI choice right
+    def resolve_key(name: str) -> str:
+        n = name.lower().strip() if name else ""
+        if "plan a" in n or "insurer1" in n or "securehealth" in n:
+            return "insurer1"
+        if "plan b" in n or "insurer2" in n or "flexicare" in n:
+            return "insurer2"
+        return n
+
+    req_prim = resolve_key(claim.primary_insurer)
+    req_sec = resolve_key(claim.secondary_insurer)
+
+    prim_key = None
+    sec_key = None
+
+    for ins in insurances:
+        ik = ins["insurer_key"]
+        if ik == req_prim:
+            prim_key = ik
+        elif ik == req_sec:
+            sec_key = ik
+
+    # Fallback to database enrollment order
+    if not prim_key and insurances:
+        prim_key = insurances[0]["insurer_key"]
+    if not sec_key and len(insurances) > 1:
+        for ins in insurances:
+            if ins["insurer_key"] != prim_key:
+                sec_key = ins["insurer_key"]
+                break
 
     return {
         "member_id": member_id,

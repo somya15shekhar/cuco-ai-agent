@@ -123,6 +123,7 @@ class HouseholdService:
 
         members: List[Dict[str, Any]] = []
         seen_insurer_keys: set = set()
+        insurer_accumulators = {}  # maps insurer_key -> (max_ded_met, max_oop_met)
 
         for m in raw_members:
             mid = m["id"]
@@ -144,12 +145,28 @@ class HouseholdService:
                 primary_name = MemberService.resolve_plan_name(pk)
                 network_status[primary_name] = insurances[0].get("network_status", "IN")
                 seen_insurer_keys.add(pk)
+                
+                # Accumulate YTD values
+                ded_met = float(insurances[0].get("deductible_met_ytd") or 0.0)
+                oop_met = float(insurances[0].get("oop_paid_ytd") or 0.0)
+                if pk not in insurer_accumulators:
+                    insurer_accumulators[pk] = {"ded": 0.0, "oop": 0.0}
+                insurer_accumulators[pk]["ded"] = max(insurer_accumulators[pk]["ded"], ded_met)
+                insurer_accumulators[pk]["oop"] = max(insurer_accumulators[pk]["oop"], oop_met)
 
             if len(insurances) > 1:
                 sk = insurances[1]["insurer_key"]
                 secondary_name = MemberService.resolve_plan_name(sk)
                 network_status[secondary_name] = insurances[1].get("network_status", "IN")
                 seen_insurer_keys.add(sk)
+
+                # Accumulate YTD values
+                ded_met = float(insurances[1].get("deductible_met_ytd") or 0.0)
+                oop_met = float(insurances[1].get("oop_paid_ytd") or 0.0)
+                if sk not in insurer_accumulators:
+                    insurer_accumulators[sk] = {"ded": 0.0, "oop": 0.0}
+                insurer_accumulators[sk]["ded"] = max(insurer_accumulators[sk]["ded"], ded_met)
+                insurer_accumulators[sk]["oop"] = max(insurer_accumulators[sk]["oop"], oop_met)
 
             members.append({
                 "id": mid,
@@ -163,13 +180,14 @@ class HouseholdService:
         plans: List[Dict[str, Any]] = []
         for insurer_key in sorted(seen_insurer_keys):
             try:
-                plan = _load_plan_json(insurer_key)
+                acc = insurer_accumulators.get(insurer_key, {"ded": 0.0, "oop": 0.0})
+                plan = _load_plan_json(insurer_key, deductible_met=acc["ded"], oop_met=acc["oop"])
                 coins_pct = int(plan.coinsurance_rate * 100)
                 plans.append({
                     "name": plan.plan_name,
                     "deductible": f"₹{plan.deductible:,.0f}",
                     "coinsurance": f"{coins_pct}/{100 - coins_pct}",
-                    "oop_remaining": f"₹{plan.oop_max - plan.oop_met:,.0f}",
+                    "oop_remaining": f"₹{max(0.0, plan.oop_max - plan.oop_met):,.0f}",
                 })
             except Exception:
                 pass

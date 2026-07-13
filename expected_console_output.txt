@@ -9,21 +9,21 @@ AARAV SHARMA CLAIM OUTPUT:
     "secondary_insurer": "Plan A"
   },
   "payment_breakdown": {
-    "primary_insurer_payment": 380000.0,
-    "secondary_insurer_payment": 33750.0,
+    "primary_insurer_payment": 351250.0,
+    "secondary_insurer_payment": 79000.0,
     "uncovered_amount": 0.0
   },
   "patient_responsibility": {
-    "final_patient_responsibility": 36250.0,
-    "patient_liability_covered": 36250.0,
+    "final_patient_responsibility": 19750.0,
+    "patient_liability_covered": 19750.0,
     "uncovered_amount": 0.0,
-    "total_patient_cost": 36250.0,
-    "primary_deductible_applied": 0.0,
-    "primary_coinsurance_patient": 70000.0,
-    "primary_oop_contribution": 70000.0,
-    "secondary_deductible_applied": 25000.0,
-    "secondary_coinsurance_patient": 11250.0,
-    "secondary_oop_contribution": 36250.0
+    "total_patient_cost": 19750.0,
+    "primary_deductible_applied": 25000.0,
+    "primary_coinsurance_patient": 73750.0,
+    "primary_oop_contribution": 98750.0,
+    "secondary_deductible_applied": 0.0,
+    "secondary_coinsurance_patient": 19750.0,
+    "secondary_oop_contribution": 19750.0
   },
   "validation_status": {
     "is_valid": true,
@@ -35,22 +35,22 @@ AARAV SHARMA CLAIM OUTPUT:
       "total_billed": 450000.0,
       "allowed": 450000.0,
       "uncovered_by_sub_limit": 0.0,
-      "deductible": 0.0,
-      "coinsurance": 70000.0,
+      "deductible": 25000.0,
+      "coinsurance": 73750.0,
       "copay": 0.0,
-      "paid": 380000.0,
-      "patient_liability": 70000.0,
+      "paid": 351250.0,
+      "patient_liability": 98750.0,
       "cpt_breakdown": [
         {
           "cpt_code": "29888",
           "billed": 350000.0,
           "allowed": 350000.0,
           "uncovered_by_sub_limit": 0.0,
-          "deductible": 0.0,
-          "coinsurance": 70000.0,
+          "deductible": 25000.0,
+          "coinsurance": 73750.0,
           "copay": 0.0,
-          "insurer_payment": 280000.0,
-          "patient_liability": 70000.0
+          "insurer_payment": 251250.0,
+          "patient_liability": 98750.0
         },
         {
           "cpt_code": "29881",
@@ -66,25 +66,25 @@ AARAV SHARMA CLAIM OUTPUT:
       ]
     },
     "secondary": {
-      "residual_from_primary": 70000.0,
-      "allowed_residual": 70000.0,
+      "residual_from_primary": 98750.0,
+      "allowed_residual": 98750.0,
       "uncovered_by_sub_limit": 0.0,
-      "deductible": 25000.0,
-      "coinsurance": 11250.0,
+      "deductible": 0.0,
+      "coinsurance": 19750.0,
       "copay": 0.0,
-      "paid": 33750.0,
-      "patient_liability": 36250.0,
+      "paid": 79000.0,
+      "patient_liability": 19750.0,
       "cpt_breakdown": [
         {
           "cpt_code": "29888",
-          "residual_from_primary": 70000.0,
-          "allowed_residual": 70000.0,
+          "residual_from_primary": 98750.0,
+          "allowed_residual": 98750.0,
           "uncovered_by_sub_limit": 0.0,
-          "deductible": 25000.0,
-          "coinsurance": 11250.0,
+          "deductible": 0.0,
+          "coinsurance": 19750.0,
           "copay": 0.0,
-          "insurer_payment": 33750.0,
-          "patient_liability": 36250.0
+          "insurer_payment": 79000.0,
+          "patient_liability": 19750.0
         },
         {
           "cpt_code": "29881",
@@ -100,30 +100,30 @@ AARAV SHARMA CLAIM OUTPUT:
       ]
     },
     "patient": {
-      "final_responsibility": 36250.0,
-      "patient_liability_covered": 36250.0,
+      "final_responsibility": 19750.0,
+      "patient_liability_covered": 19750.0,
       "uncovered_amount": 0.0,
-      "total_patient_cost": 36250.0
+      "total_patient_cost": 19750.0
     },
     "ledger": {
       "total_billed": 450000.0,
-      "primary_paid": 380000.0,
-      "secondary_paid": 33750.0,
-      "patient_responsibility": 36250.0,
+      "primary_paid": 351250.0,
+      "secondary_paid": 79000.0,
+      "patient_responsibility": 19750.0,
       "uncovered": 0.0
     }
   },
   "workflow_log": [
     "IntakeNode: Initializing claims workflow from Supabase.",
-    "IntakeNode: Loaded member Aarav Sharma (3d3de919-4a69-4814-a183-3326d82b6d7a). Primary: SecureHealth Premier, Secondary: FlexiCare Plus.",
+    "IntakeNode: Loaded member Aarav Sharma (3d3de919-4a69-4814-a183-3326d82b6d7a). Primary: FlexiCare Plus, Secondary: SecureHealth Premier.",
     "EligibilityNode: Checking CPT eligibility against primary plan.",
     "EligibilityNode: Eligibility verification complete. Eligible: True.",
     "PreAuthNode: Checking CPT preauthorization requirements.",
     "PreAuthNode: Preauth check complete. Requires Preauth: True.",
     "FetchPrimaryPlanNode: Fetching primary plan details.",
-    "FetchPrimaryPlanNode: Primary plan loaded: SecureHealth Premier",
+    "FetchPrimaryPlanNode: Primary plan loaded: FlexiCare Plus",
     "FetchSecondaryPlanNode: Fetching secondary plan details.",
-    "FetchSecondaryPlanNode: Secondary plan loaded: FlexiCare Plus",
+    "FetchSecondaryPlanNode: Secondary plan loaded: SecureHealth Premier",
     "COBNode: Running COB calculation engine (Attempt 0).",
     "ValidationNode: Validating financial ledger reconciliation.",
     "ValidationNode: Completed validation. 0 error(s).",
