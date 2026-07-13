@@ -14,6 +14,7 @@ class InsurancePlan(BaseModel):
 class ParsedClaim(BaseModel):
     claim_id: str
     patient_name: str
+    member_id: Optional[str] = None
     diagnosis: str
     cpt_codes: List[str] = Field(default_factory=list)
     icd10_codes: List[str] = Field(default_factory=list)

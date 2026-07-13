@@ -97,6 +97,7 @@ def run_cob_agent(parsed_claim: ParsedClaim) -> Dict[str, Any]:
     """
     initial_state = {
         "parsed_claim": parsed_claim,
+        "member_data": None,
         "primary_plan": None,
         "secondary_plan": None,
         "eligibility_status": None,

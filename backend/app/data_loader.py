@@ -30,8 +30,12 @@ def _resolve_insurer_file(insurer_key: str) -> str:
         return "insurer2.json"
     raise ValueError(f"Unknown insurer or plan key: {insurer_key}")
 
-def load_plan(insurer: str, member_id: Optional[str] = None) -> InsurancePlan:
-    """Loads plan details from the insurer JSON file and dynamically updates member accumulators if member_id is provided."""
+def load_plan(insurer: str, deductible_met: float = 0.0, oop_met: float = 0.0) -> InsurancePlan:
+    """Loads plan details from the insurer JSON file.
+    
+    Accumulators (deductible_met, oop_met) are now passed in directly
+    by the caller — typically sourced from Supabase via MemberService.
+    """
     file_name = _resolve_insurer_file(insurer)
     data = _load_json_file(file_name)
     
@@ -45,23 +49,6 @@ def load_plan(insurer: str, member_id: Optional[str] = None) -> InsurancePlan:
             
     # Extract preauth CPT codes
     preauth_cpt = data.get("preauthorization", {}).get("required_for_cpt", [])
-    
-    # Default plan accumulators
-    deductible_met = 0.0
-    oop_met = 0.0
-    
-    # If member_id is provided, load their specific accumulators from members.json
-    if member_id:
-        try:
-            member = load_member(member_id)
-            plan_id = "planA" if file_name == "insurer1.json" else "planB"
-            for policy in member.get("policies", []):
-                if policy.get("plan_id") == plan_id:
-                    deductible_met = float(policy.get("deductible_met_ytd_inr", 0))
-                    oop_met = float(policy.get("oop_paid_ytd_inr", 0))
-                    break
-        except Exception:
-            pass # Fallback to 0.0 if member lookup fails
             
     return InsurancePlan(
         plan_name=data.get("plan_name", data.get("insurer", "Unknown")),

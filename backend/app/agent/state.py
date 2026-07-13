@@ -4,6 +4,7 @@ from app.models.claim import ParsedClaim, InsurancePlan, COBResult
 class AgentState(TypedDict):
     """The state tracker for the LangGraph insurance coordination agent."""
     parsed_claim: ParsedClaim
+    member_data: Optional[Dict[str, Any]]
     primary_plan: Optional[InsurancePlan]
     secondary_plan: Optional[InsurancePlan]
     eligibility_status: Optional[Dict[str, Any]]

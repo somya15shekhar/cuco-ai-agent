@@ -1,70 +1,190 @@
+"""
+HouseholdService — Supabase-backed household, member, and plan queries.
+
+Returns the enriched shape the frontend expects:
+  { household: {...}, members: [...], plans: [...] }
+"""
+
+from typing import Dict, Any, List
 from app.database import supabase
+from app.services.member_service import MemberService
+from app.data_loader import load_plan as _load_plan_json
 
 
 class HouseholdService:
 
-    @staticmethod
-    def create_household(data):
+    # ------------------------------------------------------------------
+    # Create
+    # ------------------------------------------------------------------
 
+    @staticmethod
+    def create_household(data) -> Dict[str, Any]:
+        """Insert household + members + insurance enrolments."""
         household = (
             supabase.table("households")
-            .insert({
-                "household_name": data.household_name
-            })
+            .insert({"household_name": data.household_name})
             .execute()
         )
-
         household_id = household.data[0]["id"]
 
         for member in data.members:
-
             member_row = (
                 supabase.table("household_members")
                 .insert({
                     "household_id": household_id,
                     "member_name": member.member_name,
-                    "relationship": member.relationship
+                    "relationship": member.relationship,
                 })
                 .execute()
             )
-
             member_id = member_row.data[0]["id"]
 
             enrollments = []
-
             for insurance in member.insurances:
-
                 enrollments.append({
-
                     "member_id": member_id,
-
                     "insurer_key": insurance.insurer_key,
-
-                    "role": insurance.role
-
+                    "role": insurance.role,
                 })
 
-            supabase.table("member_insurance")\
-                .insert(enrollments)\
-                .execute()
+            if enrollments:
+                supabase.table("member_insurance").insert(enrollments).execute()
 
         return household.data[0]
 
-    @staticmethod
-    def list_households():
-
-        return supabase.table("households")\
-            .select("*")\
-            .execute()\
-            .data
+    # ------------------------------------------------------------------
+    # List
+    # ------------------------------------------------------------------
 
     @staticmethod
-    def get_household(household_id):
-
-        household = supabase.table("households")\
-            .select("*")\
-            .eq("id", household_id)\
-            .single()\
+    def list_households() -> List[Dict[str, Any]]:
+        return (
+            supabase.table("households")
+            .select("*")
             .execute()
+            .data
+        )
 
-        return household.data
+    # ------------------------------------------------------------------
+    # Get — enriched with members + plans (matches frontend shape)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def get_household(household_id: str) -> Dict[str, Any]:
+        return HouseholdService._build_enriched_response(
+            household_id=household_id
+        )
+
+    @staticmethod
+    def get_default_household() -> Dict[str, Any]:
+        """Return the first available household with full enrichment."""
+        rows = (
+            supabase.table("households")
+            .select("*")
+            .limit(1)
+            .execute()
+            .data
+        )
+        if not rows:
+            return {"household": None, "members": [], "plans": []}
+        return HouseholdService._build_enriched_response(
+            household_row=rows[0]
+        )
+
+    # ------------------------------------------------------------------
+    # Private helper — builds the enriched response
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_enriched_response(
+        household_id: str = None, household_row: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        # Resolve household row
+        if household_row is None:
+            household_row = (
+                supabase.table("households")
+                .select("*")
+                .eq("id", household_id)
+                .single()
+                .execute()
+                .data
+            )
+
+        hid = household_row["id"]
+
+        # Fetch members
+        raw_members = (
+            supabase.table("household_members")
+            .select("*")
+            .eq("household_id", hid)
+            .execute()
+            .data or []
+        )
+
+        members: List[Dict[str, Any]] = []
+        seen_insurer_keys: set = set()
+
+        for m in raw_members:
+            mid = m["id"]
+            insurances = (
+                supabase.table("member_insurance")
+                .select("*")
+                .eq("member_id", mid)
+                .order("created_at")
+                .execute()
+                .data or []
+            )
+
+            primary_name = ""
+            secondary_name = ""
+            network_status: Dict[str, str] = {}
+
+            if len(insurances) > 0:
+                pk = insurances[0]["insurer_key"]
+                primary_name = MemberService.resolve_plan_name(pk)
+                network_status[primary_name] = insurances[0].get("network_status", "IN")
+                seen_insurer_keys.add(pk)
+
+            if len(insurances) > 1:
+                sk = insurances[1]["insurer_key"]
+                secondary_name = MemberService.resolve_plan_name(sk)
+                network_status[secondary_name] = insurances[1].get("network_status", "IN")
+                seen_insurer_keys.add(sk)
+
+            members.append({
+                "id": mid,
+                "name": m["member_name"],
+                "primary": primary_name,
+                "secondary": secondary_name,
+                "network_status": network_status,
+            })
+
+        # Build plan summary cards from JSON config
+        plans: List[Dict[str, Any]] = []
+        for insurer_key in sorted(seen_insurer_keys):
+            try:
+                plan = _load_plan_json(insurer_key)
+                coins_pct = int(plan.coinsurance_rate * 100)
+                plans.append({
+                    "name": plan.plan_name,
+                    "deductible": f"₹{plan.deductible:,.0f}",
+                    "coinsurance": f"{coins_pct}/{100 - coins_pct}",
+                    "oop_remaining": f"₹{plan.oop_max - plan.oop_met:,.0f}",
+                })
+            except Exception:
+                pass
+
+        # Derive household relationship label
+        rels = [m.get("relationship", "") for m in raw_members]
+        has_spouse = any("spouse" in r.lower() for r in rels)
+        rel_label = "Married Household" if has_spouse else "Family Household"
+
+        return {
+            "household": {
+                "id": hid,
+                "name": household_row["household_name"],
+                "relationship": rel_label,
+            },
+            "members": members,
+            "plans": plans,
+        }

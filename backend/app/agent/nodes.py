@@ -1,3 +1,10 @@
+"""
+LangGraph agent nodes — Supabase-backed via MemberService.
+
+Member/insurer data comes from Supabase.
+Insurance plan *rules* still come from JSON config via data_loader.
+"""
+
 from typing import Dict, Any, List
 
 from app.models.claim import ParsedClaim, InsurancePlan, COBResult
@@ -6,231 +13,236 @@ from app.services.eligibility import verify_eligibility
 from app.services.preauth import check_preauthorization
 from app.services.cob import calculate_cob, reconcile_ledger
 from app.services.llm import client
-from app.data_loader import load_member, load_plan
+from app.services.member_service import MemberService
+from app.data_loader import load_plan
+
+
+# ------------------------------------------------------------------
+# Shared helper — resolves member + insurer keys from Supabase
+# ------------------------------------------------------------------
+
+def _resolve_member(state: AgentState) -> Dict[str, Any]:
+    """Return cached member_data from state, or fetch from Supabase."""
+    cached = state.get("member_data")
+    if cached:
+        return cached
+
+    claim = state["parsed_claim"]
+
+    # Prefer member_id; fall back to name lookup
+    if claim.member_id:
+        member = MemberService.get_member(claim.member_id)
+    else:
+        member = MemberService.get_member_by_name(claim.patient_name)
+
+    if not member:
+        return None
+
+    member_id = member["id"]
+    insurances = MemberService.get_member_insurance(member_id)
+
+    # First enrolment = primary for claims, second = secondary
+    prim_key = insurances[0]["insurer_key"] if len(insurances) > 0 else None
+    sec_key = insurances[1]["insurer_key"] if len(insurances) > 1 else None
+
+    return {
+        "member_id": member_id,
+        "member_name": member.get("member_name", ""),
+        "insurances": insurances,
+        "primary_insurer_key": prim_key,
+        "secondary_insurer_key": sec_key,
+    }
+
+
+# ------------------------------------------------------------------
+# Node implementations
+# ------------------------------------------------------------------
+
 
 def intake_node(state: AgentState) -> Dict[str, Any]:
-    """Prepares the state for claim processing, initializing patient and insurer keys."""
-    log = state.get("execution_log", []) + ["IntakeNode: Initializing claims workflow from members.json."]
-    claim = state["parsed_claim"]
-    
-    try:
-        member = load_member(claim.patient_name)
-        member_id = member.get("member_id")
-        current_claim_info = member.get("current_claim", {})
-        
-        prim_key = current_claim_info.get("primary_insurer_for_this_claim", "planA")
-        sec_key = current_claim_info.get("secondary_insurer_for_this_claim", "planB")
-        
-        # Resolve insurer names (e.g. Insurer1 vs Insurer2)
-        prim_insurer = "insurer1"
-        sec_insurer = "insurer2"
-        for policy in member.get("policies", []):
-            if policy.get("plan_id") == prim_key:
-                prim_insurer = policy.get("insurer")
-            if policy.get("plan_id") == sec_key:
-                sec_insurer = policy.get("insurer")
-                
-        log.append(f"IntakeNode: Loaded member {claim.patient_name} ({member_id}). "
-                   f"Primary Insurer: {prim_insurer}, Secondary Insurer: {sec_insurer}.")
-    except Exception as e:
-        log.append(f"IntakeNode: Member lookup failed. Using defaults. Error: {str(e)}")
-        
+    """Fetch member data from Supabase and store in state for all nodes."""
+    log = state.get("execution_log", []) + [
+        "IntakeNode: Initializing claims workflow from Supabase."
+    ]
+    member_data = _resolve_member(state)
+
+    if member_data:
+        prim_name = MemberService.resolve_plan_name(member_data["primary_insurer_key"] or "")
+        sec_name = MemberService.resolve_plan_name(member_data["secondary_insurer_key"] or "")
+        log.append(
+            f"IntakeNode: Loaded member {member_data['member_name']} "
+            f"({member_data['member_id']}). "
+            f"Primary: {prim_name}, Secondary: {sec_name}."
+        )
+    else:
+        log.append("IntakeNode: Member lookup failed. Using defaults.")
+
     return {
+        "member_data": member_data,
         "retry_count": 0,
         "validation_errors": [],
         "reflection_notes": None,
         "execution_log": log,
         "primary_plan": None,
-        "secondary_plan": None
+        "secondary_plan": None,
     }
+
 
 def eligibility_node(state: AgentState) -> Dict[str, Any]:
-    """Verifies eligibility of the claim CPT codes against the dynamic primary plan."""
-    log = state.get("execution_log", []) + ["EligibilityNode: Checking CPT eligibility against primary plan."]
+    """Verify CPT eligibility against the primary insurer's plan."""
+    log = state.get("execution_log", []) + [
+        "EligibilityNode: Checking CPT eligibility against primary plan."
+    ]
     claim = state["parsed_claim"]
-    
-    try:
-        member = load_member(claim.patient_name)
-        current_claim_info = member.get("current_claim", {})
-        prim_key = current_claim_info.get("primary_insurer_for_this_claim", "planA")
-        
-        prim_insurer = "insurer1"
-        for policy in member.get("policies", []):
-            if policy.get("plan_id") == prim_key:
-                prim_insurer = policy.get("insurer")
-                break
-    except Exception:
-        prim_insurer = "insurer1"
-        
-    status = verify_eligibility(claim.cpt_codes, prim_insurer)
-    
-    log.append(f"EligibilityNode: Eligibility verification complete. Eligible: {status['is_eligible']}.")
-    return {
-        "eligibility_status": status,
-        "execution_log": log
-    }
+    member_data = state.get("member_data")
+
+    prim_key = (member_data or {}).get("primary_insurer_key", "insurer1") or "insurer1"
+    status = verify_eligibility(claim.cpt_codes, prim_key)
+
+    log.append(
+        f"EligibilityNode: Eligibility verification complete. "
+        f"Eligible: {status['is_eligible']}."
+    )
+    return {"eligibility_status": status, "execution_log": log}
+
 
 def preauth_node(state: AgentState) -> Dict[str, Any]:
-    """Checks preauthorization requirements dynamically."""
-    log = state.get("execution_log", []) + ["PreAuthNode: Checking CPT preauthorization requirements."]
+    """Check preauthorization requirements against the primary plan."""
+    log = state.get("execution_log", []) + [
+        "PreAuthNode: Checking CPT preauthorization requirements."
+    ]
     claim = state["parsed_claim"]
-    
-    try:
-        member = load_member(claim.patient_name)
-        current_claim_info = member.get("current_claim", {})
-        prim_key = current_claim_info.get("primary_insurer_for_this_claim", "planA")
-        
-        prim_insurer = "insurer1"
-        for policy in member.get("policies", []):
-            if policy.get("plan_id") == prim_key:
-                prim_insurer = policy.get("insurer")
-                break
-    except Exception:
-        prim_insurer = "insurer1"
-        
-    status = check_preauthorization(claim.cpt_codes, prim_insurer)
-    
-    log.append(f"PreAuthNode: Preauth check complete. Requires Preauth: {status['requires_preauth']}.")
-    return {
-        "preauth_status": status,
-        "execution_log": log
-    }
+    member_data = state.get("member_data")
+
+    prim_key = (member_data or {}).get("primary_insurer_key", "insurer1") or "insurer1"
+    status = check_preauthorization(claim.cpt_codes, prim_key)
+
+    log.append(
+        f"PreAuthNode: Preauth check complete. "
+        f"Requires Preauth: {status['requires_preauth']}."
+    )
+    return {"preauth_status": status, "execution_log": log}
+
 
 def fetch_primary_plan_node(state: AgentState) -> Dict[str, Any]:
-    """Fetches details for the primary insurance plan dynamically."""
-    log = state.get("execution_log", []) + ["FetchPrimaryPlanNode: Fetching primary plan details."]
-    claim = state["parsed_claim"]
-    
+    """Load primary InsurancePlan from JSON with Supabase accumulators."""
+    log = state.get("execution_log", []) + [
+        "FetchPrimaryPlanNode: Fetching primary plan details."
+    ]
+    member_data = state.get("member_data")
+
+    prim_key = (member_data or {}).get("primary_insurer_key") or "insurer1"
+    member_id = (member_data or {}).get("member_id")
+
+    ded_met, oop_met = 0.0, 0.0
+    if member_id:
+        ded_met, oop_met = MemberService.get_accumulators(member_id, prim_key)
+
     try:
-        member = load_member(claim.patient_name)
-        current_claim_info = member.get("current_claim", {})
-        prim_key = current_claim_info.get("primary_insurer_for_this_claim", "planA")
-        
-        prim_insurer = "insurer1"
-        for policy in member.get("policies", []):
-            if policy.get("plan_id") == prim_key:
-                prim_insurer = policy.get("insurer")
-                break
-                
-        plan = load_plan(prim_insurer, member_id=member.get("member_id"))
+        plan = load_plan(prim_key, deductible_met=ded_met, oop_met=oop_met)
     except Exception as e:
         plan = load_plan("insurer1")
-        log.append(f"FetchPrimaryPlanNode: Fallback to default insurer1. Error: {str(e)}")
-        
+        log.append(f"FetchPrimaryPlanNode: Fallback to insurer1. Error: {e}")
+
     log.append(f"FetchPrimaryPlanNode: Primary plan loaded: {plan.plan_name}")
-    return {
-        "primary_plan": plan,
-        "execution_log": log
-    }
+    return {"primary_plan": plan, "execution_log": log}
+
 
 def fetch_secondary_plan_node(state: AgentState) -> Dict[str, Any]:
-    """Fetches details for the secondary insurance plan dynamically."""
-    log = state.get("execution_log", []) + ["FetchSecondaryPlanNode: Fetching secondary plan details."]
-    claim = state["parsed_claim"]
-    
+    """Load secondary InsurancePlan from JSON with Supabase accumulators."""
+    log = state.get("execution_log", []) + [
+        "FetchSecondaryPlanNode: Fetching secondary plan details."
+    ]
+    member_data = state.get("member_data")
+
+    sec_key = (member_data or {}).get("secondary_insurer_key") or "insurer2"
+    member_id = (member_data or {}).get("member_id")
+
+    ded_met, oop_met = 0.0, 0.0
+    if member_id:
+        ded_met, oop_met = MemberService.get_accumulators(member_id, sec_key)
+
     try:
-        member = load_member(claim.patient_name)
-        current_claim_info = member.get("current_claim", {})
-        sec_key = current_claim_info.get("secondary_insurer_for_this_claim", "planB")
-        
-        sec_insurer = "insurer2"
-        for policy in member.get("policies", []):
-            if policy.get("plan_id") == sec_key:
-                sec_insurer = policy.get("insurer")
-                break
-                
-        plan = load_plan(sec_insurer, member_id=member.get("member_id"))
+        plan = load_plan(sec_key, deductible_met=ded_met, oop_met=oop_met)
     except Exception as e:
         plan = load_plan("insurer2")
-        log.append(f"FetchSecondaryPlanNode: Fallback to default insurer2. Error: {str(e)}")
-        
+        log.append(f"FetchSecondaryPlanNode: Fallback to insurer2. Error: {e}")
+
     log.append(f"FetchSecondaryPlanNode: Secondary plan loaded: {plan.plan_name}")
-    return {
-        "secondary_plan": plan,
-        "execution_log": log
-    }
+    return {"secondary_plan": plan, "execution_log": log}
+
 
 def cob_node(state: AgentState) -> Dict[str, Any]:
-    """Performs Coordination of Benefits calculations using dynamic data."""
+    """Perform Coordination of Benefits calculations (no demo error injection)."""
     retry = state.get("retry_count", 0)
-    log = state.get("execution_log", []) + [f"COBNode: Running COB calculation engine (Attempt {retry})."]
-    
+    log = state.get("execution_log", []) + [
+        f"COBNode: Running COB calculation engine (Attempt {retry})."
+    ]
+
     claim = state["parsed_claim"]
     primary = state["primary_plan"]
     secondary = state["secondary_plan"]
-    
-    # Run dynamic calculations
+
     result = calculate_cob(claim, primary, secondary)
-    
-    # Artificial validation discrepancy on first attempt to demonstrate reflection loop
-    if retry == 0:
-        result.final_patient_responsibility += 100.0  # Simulate a math error of $100
-        result.patient_liability_covered += 100.0
-        result.total_patient_cost += 100.0
-        if result.explanation:
-            if "patient" in result.explanation:
-                result.explanation["patient"]["final_responsibility"] += 100.0
-                result.explanation["patient"]["patient_liability_covered"] += 100.0
-                result.explanation["patient"]["total_patient_cost"] += 100.0
-            if "ledger" in result.explanation:
-                result.explanation["ledger"]["patient_responsibility"] += 100.0
-        result.is_valid = False
-        result.validation_message = "Patient responsibility does not reconcile with payment breakdown."
-        log.append("COBNode: Simulated mathematical discrepancy injected for testing reflection.")
-        
-    return {
-        "cob_result": result,
-        "execution_log": log
-    }
+
+    return {"cob_result": result, "execution_log": log}
+
 
 def validation_node(state: AgentState) -> Dict[str, Any]:
-    """Validates the financial correctness of the COB calculations."""
-    log = state.get("execution_log", []) + ["ValidationNode: Validating financial ledger reconciliation."]
+    """Validate financial correctness of the COB calculations."""
+    log = state.get("execution_log", []) + [
+        "ValidationNode: Validating financial ledger reconciliation."
+    ]
     result = state["cob_result"]
     errors = []
-    
-    # Ledger validation check using reconcile_ledger
+
     is_valid = reconcile_ledger(
         total_billed=result.total_amount,
         primary_payment=result.primary_payment,
         secondary_payment=result.secondary_payment,
         patient_responsibility=result.final_patient_responsibility,
-        uncovered_amount=result.uncovered_amount
+        uncovered_amount=result.uncovered_amount,
     )
-    
+
     if not is_valid:
         calculated_total = (
-            result.primary_payment + 
-            result.secondary_payment + 
-            result.final_patient_responsibility + 
-            result.uncovered_amount
+            result.primary_payment
+            + result.secondary_payment
+            + result.final_patient_responsibility
+            + result.uncovered_amount
         )
         errors.append(
-            f"Ledger Mismatch: Primary Payment ({result.primary_payment}) + Secondary Payment "
-            f"({result.secondary_payment}) + Patient Responsibility ({result.final_patient_responsibility}) "
-            f"+ Uncovered Amount ({result.uncovered_amount}) = {calculated_total}, which does not match "
-            f"Total Claim Amount ({result.total_amount}). Discrepancy is {round(calculated_total - result.total_amount, 2)}."
+            f"Ledger Mismatch: Primary ({result.primary_payment}) + "
+            f"Secondary ({result.secondary_payment}) + "
+            f"Patient ({result.final_patient_responsibility}) + "
+            f"Uncovered ({result.uncovered_amount}) = {calculated_total}, "
+            f"vs Total ({result.total_amount}). "
+            f"Discrepancy: {round(calculated_total - result.total_amount, 2)}."
         )
-        
-    if result.primary_payment < 0 or result.secondary_payment < 0 or result.final_patient_responsibility < 0:
-        errors.append("Validation Error: Negative values detected in payment amounts.")
-        
-    log.append(f"ValidationNode: Completed validation. Found {len(errors)} error(s).")
-    return {
-        "validation_errors": errors,
-        "execution_log": log
-    }
+
+    if (
+        result.primary_payment < 0
+        or result.secondary_payment < 0
+        or result.final_patient_responsibility < 0
+    ):
+        errors.append("Validation Error: Negative values detected in payments.")
+
+    log.append(f"ValidationNode: Completed validation. {len(errors)} error(s).")
+    return {"validation_errors": errors, "execution_log": log}
+
 
 def reflection_node(state: AgentState) -> Dict[str, Any]:
-    """Uses Groq LLM to diagnose validation failures."""
-    log = state.get("execution_log", []) + ["ReflectionNode: Analyzing validation failure with Groq LLM."]
+    """Use Groq LLM to diagnose validation failures."""
+    log = state.get("execution_log", []) + [
+        "ReflectionNode: Analyzing validation failure with Groq LLM."
+    ]
     errors = state.get("validation_errors", [])
     claim = state["parsed_claim"]
     cob = state["cob_result"]
-    
+
     errors_str = "\n".join(f"- {e}" for e in errors)
     prompt = f"""
-You are an expert insurance claim auditor. The Coordination of Benefits (COB) calculations failed validation.
+You are an expert insurance claim auditor. The COB calculations failed validation.
 
 Claim Details:
 - Claim ID: {claim.claim_id}
@@ -239,100 +251,111 @@ Claim Details:
 Calculated Breakdown:
 - Primary Payment: ${cob.primary_payment}
 - Secondary Payment: ${cob.secondary_payment}
-- Uncovered Billed: ${cob.uncovered_amount}
+- Uncovered: ${cob.uncovered_amount}
 - Patient Responsibility: ${cob.final_patient_responsibility}
 
 Validation Errors:
 {errors_str}
 
-Analyze the calculation results, identify why the ledger does not reconcile, and explain the issue clearly. 
-DO NOT recalculate the figures yourself (calculations must remain deterministic). Simply explain the mismatch and declare that the COB engine must be re-run on retry without the error.
+Analyze the results, identify the mismatch, and explain clearly.
+DO NOT recalculate figures. Explain the issue and declare the engine must be re-run.
 """
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             temperature=0,
             messages=[
-                {"role": "system", "content": "You are a helpful insurance coordination audit assistant."},
-                {"role": "user", "content": prompt}
-            ]
+                {"role": "system", "content": "You are a helpful insurance audit assistant."},
+                {"role": "user", "content": prompt},
+            ],
         )
         notes = response.choices[0].message.content
     except Exception as e:
-        notes = f"Reflection error: Groq API call failed: {str(e)}"
-        
-    log.append(f"ReflectionNode: Groq diagnosis generated.")
-    
-    current_retry = state.get("retry_count", 0)
+        notes = f"Reflection error: Groq API call failed: {e}"
+
+    log.append("ReflectionNode: Groq diagnosis generated.")
     return {
         "reflection_notes": notes,
-        "retry_count": current_retry + 1,
-        "validation_errors": [],  # Clear current validation errors for the next run
-        "execution_log": log
+        "retry_count": state.get("retry_count", 0) + 1,
+        "validation_errors": [],
+        "execution_log": log,
     }
 
+
 def output_node(state: AgentState) -> Dict[str, Any]:
-    """Generates the structured JSON outputs from the state."""
-    log = state.get("execution_log", []) + ["OutputNode: Claim processing completed successfully."]
+    """Generate structured JSON output and persist accumulators to Supabase."""
+    log = state.get("execution_log", []) + [
+        "OutputNode: Claim processing completed successfully."
+    ]
     cob = state.get("cob_result")
     claim = state["parsed_claim"]
     primary = state.get("primary_plan")
     secondary = state.get("secondary_plan")
-    
+    member_data = state.get("member_data")
+
     if cob is None:
+        # Ineligible — return zero-pay output
         eligibility = state.get("eligibility_status") or {}
         reason = "Claim is ineligible (uncovered or empty CPT codes)."
         if eligibility and not eligibility.get("is_eligible", False):
-            reason = f"Claim is ineligible. CPT codes checked: {claim.cpt_codes or 'None'}."
-            
-        final_output = {
-            "claim_summary": {
-                "claim_id": claim.claim_id,
-                "patient_name": claim.patient_name,
-                "diagnosis": claim.diagnosis,
-                "total_billed": claim.total_amount,
-                "primary_insurer": claim.primary_insurer,
-                "secondary_insurer": claim.secondary_insurer,
-            },
-            "payment_breakdown": {
-                "primary_insurer_payment": 0.0,
-                "secondary_insurer_payment": 0.0,
-                "uncovered_amount": claim.total_amount,
-            },
-            "patient_responsibility": {
-                "final_patient_responsibility": claim.total_amount,
-                "patient_liability_covered": 0.0,
-                "uncovered_amount": claim.total_amount,
-                "total_patient_cost": claim.total_amount,
-                "primary_deductible_applied": 0.0,
-                "primary_coinsurance_patient": 0.0,
-                "primary_oop_contribution": 0.0,
-                "secondary_deductible_applied": 0.0,
-                "secondary_coinsurance_patient": 0.0,
-                "secondary_oop_contribution": 0.0,
-            },
-            "validation_status": {
-                "is_valid": False,
-                "retry_count": state.get("retry_count", 0),
-                "reflection_notes": reason,
-            },
-            "explanation": {
-                "general_notes": reason
-            },
-            "workflow_log": log
-        }
+            reason = f"Claim is ineligible. CPT codes: {claim.cpt_codes or 'None'}."
+
         return {
-            "final_output": final_output,
-            "execution_log": log
+            "final_output": {
+                "claim_summary": {
+                    "claim_id": claim.claim_id,
+                    "patient_name": claim.patient_name,
+                    "diagnosis": claim.diagnosis,
+                    "total_billed": claim.total_amount,
+                    "primary_insurer": claim.primary_insurer,
+                    "secondary_insurer": claim.secondary_insurer,
+                },
+                "payment_breakdown": {
+                    "primary_insurer_payment": 0.0,
+                    "secondary_insurer_payment": 0.0,
+                    "uncovered_amount": claim.total_amount,
+                },
+                "patient_responsibility": {
+                    "final_patient_responsibility": claim.total_amount,
+                    "patient_liability_covered": 0.0,
+                    "uncovered_amount": claim.total_amount,
+                    "total_patient_cost": claim.total_amount,
+                    "primary_deductible_applied": 0.0,
+                    "primary_coinsurance_patient": 0.0,
+                    "primary_oop_contribution": 0.0,
+                    "secondary_deductible_applied": 0.0,
+                    "secondary_coinsurance_patient": 0.0,
+                    "secondary_oop_contribution": 0.0,
+                },
+                "validation_status": {
+                    "is_valid": False,
+                    "retry_count": state.get("retry_count", 0),
+                    "reflection_notes": reason,
+                },
+                "explanation": {"general_notes": reason},
+                "workflow_log": log,
+            },
+            "execution_log": log,
         }
 
-    # Perform accumulator updates on the final successful result
+    # Persist accumulators to Supabase
     from app.services.cob import update_accumulators
+
     if primary:
         update_accumulators(primary, cob.primary_deductible_applied, cob.primary_oop_contribution)
     if secondary:
         update_accumulators(secondary, cob.secondary_deductible_applied, cob.secondary_oop_contribution)
-    
+
+    # Write back to Supabase if we have a member
+    if member_data and member_data.get("member_id"):
+        mid = member_data["member_id"]
+        prim_key = member_data.get("primary_insurer_key")
+        sec_key = member_data.get("secondary_insurer_key")
+        if primary and prim_key:
+            MemberService.update_accumulators(mid, prim_key, primary.deductible_met, primary.oop_met)
+        if secondary and sec_key:
+            MemberService.update_accumulators(mid, sec_key, secondary.deductible_met, secondary.oop_met)
+
     final_output = {
         "claim_summary": {
             "claim_id": claim.claim_id,
@@ -365,11 +388,7 @@ def output_node(state: AgentState) -> Dict[str, Any]:
             "reflection_notes": state.get("reflection_notes"),
         },
         "explanation": cob.explanation,
-        "workflow_log": log
-    }
-    
-    return {
-        "final_output": final_output,
-        "execution_log": log
+        "workflow_log": log,
     }
 
+    return {"final_output": final_output, "execution_log": log}

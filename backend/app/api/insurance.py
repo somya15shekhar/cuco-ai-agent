@@ -13,13 +13,12 @@ class CPTRequest(BaseModel):
     cpt_codes: List[str]
     insurer: Optional[str] = None
     plan_name: Optional[str] = None
-    member_id: Optional[str] = None
 
 @router.get("/{insurer}", response_model=InsurancePlan)
-def get_insurer_plan(insurer: str, member_id: Optional[str] = None):
+def get_insurer_plan(insurer: str):
     """Loads plan details dynamically from JSON based on insurer/plan key."""
     try:
-        return load_plan(insurer, member_id=member_id)
+        return load_plan(insurer)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -28,7 +27,7 @@ def check_eligibility_endpoint(request: CPTRequest):
     """Checks eligibility for a list of CPT codes against the specified insurer plan."""
     try:
         insurer_key = request.insurer or request.plan_name or "insurer1"
-        plan = load_plan(insurer_key, member_id=request.member_id)
+        plan = load_plan(insurer_key)
         return verify_eligibility(request.cpt_codes, plan)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -38,7 +37,8 @@ def check_preauth_endpoint(request: CPTRequest):
     """Checks preauthorization requirements for a list of CPT codes against the specified insurer plan."""
     try:
         insurer_key = request.insurer or request.plan_name or "insurer1"
-        plan = load_plan(insurer_key, member_id=request.member_id)
+        plan = load_plan(insurer_key)
         return check_preauthorization(request.cpt_codes, plan)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+

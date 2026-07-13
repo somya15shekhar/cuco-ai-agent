@@ -32,8 +32,7 @@ function getEl(id) {
 // ==========================================================================
 
 // Listen for Auth changes
-supabaseClient.auth.onAuthStateChange((event, session) => {
-    currentSession = session;
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
     const path = window.location.pathname;
     const currentPage = path.split('/').pop() || 'index.html';
     
@@ -340,14 +339,10 @@ addSafeListener('btn-process', 'click', async () => {
         let networkStatus = { "SecureHealth Premier": "IN", "FlexiCare Plus": "IN" };
         let provider = parsedRow.provider_name || selectedClaim.patient_name + "'s Provider";
 
-        if (parsedRow.patient_name === "Priya Sharma") {
-            networkStatus = { "SecureHealth Premier": "IN", "FlexiCare Plus": "OUT" };
-            provider = "ActiveRehab Physiotherapy Clinic (Network - Plan A, non-network - Plan B)";
-        }
-
         const cobPayload = {
             claim_id: parsedRow.claim_id,
             patient_name: parsedRow.patient_name,
+            member_id: selectedClaim.member_id || null,
             diagnosis: parsedRow.diagnosis,
             cpt_codes: parsedRow.cpt_codes || [],
             icd10_codes: parsedRow.icd_codes || [],
