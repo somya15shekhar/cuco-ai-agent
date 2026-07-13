@@ -976,3 +976,423 @@ input:focus, select:focus {
         border-bottom: 3px solid var(--color-primary);
     }
 }
+
+/* ==========================================================================
+   NEW VISUAL REVAMP STYLES ( Hackathon Enhancements )
+   ========================================================================== */
+.mb-4 { margin-bottom: 1.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+
+/* Claim Journey Breadcrumbs */
+.claim-journey {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow-x: auto;
+    padding: 1.25rem 1rem;
+    background: rgba(22, 28, 45, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    gap: 0.5rem;
+}
+
+.journey-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    min-width: 85px;
+    flex: 1;
+}
+
+.journey-step i {
+    font-size: 1.15rem;
+    margin-bottom: 0.4rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.journey-step.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.journey-step.active i {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    color: var(--color-primary);
+}
+
+.journey-step.completed {
+    color: var(--color-accent);
+}
+.journey-step.completed i {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    color: var(--color-accent);
+}
+
+.journey-arrow {
+    color: rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem;
+}
+
+/* Household Context Card */
+.household-context-card {
+    background: linear-gradient(135deg, rgba(22, 28, 45, 0.7), rgba(10, 12, 22, 0.7));
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.household-header {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+}
+
+.member-detail-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.member-detail-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.member-detail-card h5 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.policy-badge-row {
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.policy-badge {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.policy-badge span {
+    font-weight: 600;
+}
+
+.policy-badge.primary-role span {
+    color: var(--color-primary);
+}
+
+.policy-badge.dependent-role span {
+    color: var(--color-purple);
+}
+
+/* Cost Flow Visual */
+.cost-flow-section {
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.flow-card {
+    width: 100%;
+    max-width: 340px;
+    background: rgba(22, 28, 45, 0.85);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.flow-card.hospital {
+    border-color: rgba(255,255,255,0.15);
+}
+
+.flow-card.primary {
+    border-color: rgba(99, 102, 241, 0.35);
+    background: rgba(99, 102, 241, 0.04);
+}
+
+.flow-card.secondary {
+    border-color: rgba(168, 85, 247, 0.35);
+    background: rgba(168, 85, 247, 0.04);
+}
+
+.flow-card.patient {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.flow-card.balance {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.04);
+}
+
+.flow-card h6 {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.5px;
+}
+
+.flow-card .flow-val {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.flow-arrow {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    opacity: 0.6;
+    animation: bounce 2s infinite alternate ease-in-out;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(4px); }
+}
+
+/* Collapsible Sections */
+.accordion-item {
+    margin-bottom: 0.75rem;
+}
+
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.accordion-header:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.12);
+}
+
+.accordion-header h5 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.accordion-content {
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: rgba(0,0,0,0.25);
+}
+
+/* Plan details grid */
+.plan-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.detail-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-stat span:first-child {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-stat span:last-child {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Dynamic view calculations dropdown */
+.calc-toggle {
+    font-size: 0.78rem;
+    color: var(--color-primary);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    outline: none;
+    margin-top: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 500;
+}
+
+.calc-toggle:hover {
+    color: #818cf8;
+}
+
+.calc-details {
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.calc-details-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+.calc-details-row:last-child {
+    border-bottom: none;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Explanation Tables */
+.explanation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.explanation-table th, .explanation-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.explanation-table th {
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+}
+
+/* Header Claim Info Card */
+.claim-info-header-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.claim-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.claim-info-item label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.claim-info-item span {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+/* Structuring Explanation panels */
+.explanation-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.explanation-card h5 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.explanation-card-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+.explanation-card-row:last-child {
+    border-bottom: none;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    padding: 0.35rem 0;
+}
+.checklist-item i {
+    color: var(--color-accent);
+}

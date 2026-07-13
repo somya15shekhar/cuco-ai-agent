@@ -50,6 +50,66 @@
             
             <!-- TAB: ADJUDICATION (Existing) -->
             <div id="adjudication-tab" class="tab-pane active">
+                
+                <!-- CLAIM JOURNEY BREADCRUMB STEPPER -->
+                <div class="claim-journey mb-4" id="claim-journey-stepper">
+                    <div class="journey-step active" id="step-upload">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Upload Docs</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-ocr">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <span>OCR Extract</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-reasoning">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Medical Reasoning</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-eligibility">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <span>Eligibility</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-preauth">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span>Pre-Auth Check</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-adjudication">
+                        <i class="fa-solid fa-stamp"></i>
+                        <span>Adjudication</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-cob">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span>COB Calc</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-validation">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Validation</span>
+                    </div>
+                    <div class="journey-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    <div class="journey-step" id="step-breakdown">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                        <span>Financials</span>
+                    </div>
+                </div>
+
+                <!-- HOUSEHOLD CONTEXT CARD -->
+                <div class="household-context-card mb-4" id="household-context-section">
+                    <div class="household-header">
+                        <i class="fa-solid fa-people-roof text-purple"></i>
+                        <span id="household-title-display">Loading Household...</span>
+                    </div>
+                    <div class="members-grid" id="household-members-grid">
+                        <!-- Dynamically loaded -->
+                    </div>
+                </div>
+
                 <div class="dashboard-grid">
 
             <!-- CLAIM CREATION SECTION -->
@@ -59,8 +119,10 @@
 
                 <form id="claim-form">
                     <div class="input-group">
-                        <label for="claim-patient-name">Patient Name</label>
-                        <input type="text" id="claim-patient-name" placeholder="e.g. Priya Sharma" required>
+                        <label for="claim-patient-select">Select Patient</label>
+                        <select id="claim-patient-select" required>
+                            <!-- Dynamically loaded -->
+                        </select>
                     </div>
                     <div class="input-group">
                         <label for="claim-type">Claim Type</label>
@@ -80,18 +142,12 @@
                     </div>
                     <div class="form-row">
                         <div class="input-group">
-                            <label for="claim-primary">Primary Insurer</label>
-                            <select id="claim-primary">
-                                <option value="Plan A">SecureHealth Premier (Plan A)</option>
-                                <option value="Plan B">FlexiCare Plus (Plan B)</option>
-                            </select>
+                            <label>Primary Insurer</label>
+                            <input type="text" id="claim-primary-display" readonly style="background: rgba(255,255,255,0.02); color: var(--text-secondary); cursor: not-allowed; border-color: rgba(255,255,255,0.05);">
                         </div>
                         <div class="input-group">
-                            <label for="claim-secondary">Secondary Insurer</label>
-                            <select id="claim-secondary">
-                                <option value="Plan B">FlexiCare Plus (Plan B)</option>
-                                <option value="Plan A">SecureHealth Premier (Plan A)</option>
-                            </select>
+                            <label>Secondary Insurer</label>
+                            <input type="text" id="claim-secondary-display" readonly style="background: rgba(255,255,255,0.02); color: var(--text-secondary); cursor: not-allowed; border-color: rgba(255,255,255,0.05);">
                         </div>
                     </div>
                     <button type="submit" class="btn-primary w-full"><i class="fa-solid fa-plus-circle"></i> Create Claim Record</button>
@@ -153,8 +209,82 @@
                     <div id="validation-badge" class="badge">Valid</div>
                 </div>
 
+                <!-- Claim Context Header Summary Card -->
+                <div class="claim-info-header-card">
+                    <div class="claim-info-item">
+                        <label>Patient</label>
+                        <span id="info-patient-name">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Household</label>
+                        <span id="info-household-name">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Diagnosis</label>
+                        <span id="info-diagnosis">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Claim Type</label>
+                        <span id="info-claim-type">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Total Billed</label>
+                        <span id="info-billed-amount">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Primary Plan</label>
+                        <span id="info-primary-insurer">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Secondary Plan</label>
+                        <span id="info-secondary-insurer">-</span>
+                    </div>
+                    <div class="claim-info-item">
+                        <label>Status</label>
+                        <span id="info-claim-status" class="text-green">-</span>
+                    </div>
+                </div>
+
+                <!-- Visual Cost Flow Diagram -->
+                <div class="cost-flow-section">
+                    <h4 style="align-self: flex-start; margin-bottom: 0.5rem;"><i class="fa-solid fa-diagram-project primary-icon"></i> Visual Cost Flow</h4>
+                    
+                    <div class="flow-card hospital">
+                        <h6>Hospital Bill</h6>
+                        <div id="flow-hospital-bill" class="flow-val">₹0.00</div>
+                    </div>
+                    
+                    <div class="flow-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+                    
+                    <div class="flow-card primary">
+                        <h6>Primary Insurance Paid</h6>
+                        <div id="flow-primary-paid" class="flow-val text-green">₹0.00</div>
+                    </div>
+                    
+                    <div class="flow-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+                    
+                    <div class="flow-card balance">
+                        <h6>Remaining Balance</h6>
+                        <div id="flow-remaining-balance" class="flow-val text-orange">₹0.00</div>
+                    </div>
+                    
+                    <div class="flow-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+                    
+                    <div class="flow-card secondary">
+                        <h6>Secondary Insurance Paid</h6>
+                        <div id="flow-secondary-paid" class="flow-val text-green">₹0.00</div>
+                    </div>
+                    
+                    <div class="flow-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+                    
+                    <div class="flow-card patient">
+                        <h6>Patient Pays</h6>
+                        <div id="flow-patient-liability" class="flow-val text-purple font-bold">₹0.00</div>
+                    </div>
+                </div>
+
                 <div class="results-grid">
-                    <!-- Column 1: Financial Breakdown -->
+                    <!-- Column 1: Financial Ledger -->
                     <div class="results-col">
                         <h4>Financial Ledger</h4>
                         <div class="ledger-row">
@@ -162,37 +292,161 @@
                             <span id="val-total-billed" class="ledger-value">₹0.00</span>
                         </div>
                         <hr class="ledger-divider">
+                        
                         <div class="ledger-row">
                             <span class="ledger-label"><i class="fa-solid fa-building-columns primary-icon"></i> Primary Insurer Paid</span>
                             <span id="val-primary-paid" class="ledger-value text-green">₹0.00</span>
                         </div>
+                        <!-- View Calculation Primary -->
+                        <div style="margin-left: 1.5rem; margin-top: -0.5rem; margin-bottom: 0.5rem;">
+                            <button type="button" class="calc-toggle" onclick="toggleElement('calc-details-primary')">
+                                View Calculation <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                            <div id="calc-details-primary" class="calc-details hidden">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
                         <div class="ledger-row">
                             <span class="ledger-label"><i class="fa-solid fa-building-columns secondary-icon"></i> Secondary Insurer Paid</span>
                             <span id="val-secondary-paid" class="ledger-value text-green">₹0.00</span>
                         </div>
+                        <!-- View Calculation Secondary -->
+                        <div style="margin-left: 1.5rem; margin-top: -0.5rem; margin-bottom: 0.5rem;">
+                            <button type="button" class="calc-toggle" onclick="toggleElement('calc-details-secondary')">
+                                View Calculation <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                            <div id="calc-details-secondary" class="calc-details hidden">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
                         <hr class="ledger-divider">
                         <div class="ledger-row highlight-liability">
                             <span class="ledger-label"><i class="fa-solid fa-user-tag text-purple"></i> Patient Responsibility</span>
                             <span id="val-patient-liability" class="ledger-value text-purple font-bold">₹0.00</span>
                         </div>
                         <div class="ledger-sub-row">
-                            <span class="sub-label">Covered Portion</span>
+                            <span class="sub-label">Covered Patient Cost</span>
                             <span id="val-patient-covered" class="sub-value">₹0.00</span>
                         </div>
                         <div class="ledger-sub-row">
                             <span class="sub-label">Uncovered Sub-limits / Exclusions</span>
                             <span id="val-patient-uncovered" class="sub-value text-orange">₹0.00</span>
                         </div>
+
+                        <!-- Insurance Plan Details (Collapsible Accordion) -->
+                        <div style="margin-top: 1.5rem;">
+                            <h4>Insurance Plan Details</h4>
+                            
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleElement('accordion-primary-details')">
+                                    <h5><i class="fa-solid fa-address-card primary-icon"></i> Primary Plan Parameters</h5>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <div id="accordion-primary-details" class="accordion-content hidden">
+                                    <div id="plan-details-primary-grid" class="plan-details-grid">
+                                        <!-- Loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <div class="accordion-header" onclick="toggleElement('accordion-secondary-details')">
+                                    <h5><i class="fa-solid fa-address-card secondary-icon"></i> Secondary Plan Parameters</h5>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <div id="accordion-secondary-details" class="accordion-content hidden">
+                                    <div id="plan-details-secondary-grid" class="plan-details-grid">
+                                        <!-- Loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Column 2: Agent Explanation -->
+                    <!-- Column 2: Agent Explanation (Structured) -->
                     <div class="results-col">
-                        <h4>Agent Explanation & Validation Notes</h4>
-                        <div id="agent-explanation-box" class="explanation-box">
-                            No agent feedback available.
+                        <h4>Structured Agent Explanation</h4>
+                        
+                        <div class="explanation-card">
+                            <h5 class="primary-icon"><i class="fa-solid fa-chevron-right"></i> Primary Adjudication</h5>
+                            <div class="explanation-card-row">
+                                <span>Allowed Amount</span>
+                                <span id="exp-prim-allowed">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row">
+                                <span>Deductible Applied</span>
+                                <span id="exp-prim-deductible">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row">
+                                <span>Coinsurance Share</span>
+                                <span id="exp-prim-coinsurance">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row font-bold">
+                                <span>Payment</span>
+                                <span id="exp-prim-payment" class="text-green">₹0.00</span>
+                            </div>
                         </div>
-                        <div id="agent-validation-box" class="validation-box">
-                            <!-- Populated dynamically -->
+                        
+                        <div class="explanation-card">
+                            <h5 class="secondary-icon"><i class="fa-solid fa-chevron-right"></i> Secondary Adjudication</h5>
+                            <div class="explanation-card-row">
+                                <span>Remaining Liability (Residual)</span>
+                                <span id="exp-sec-residual">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row">
+                                <span>Allowed Residual</span>
+                                <span id="exp-sec-allowed">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row">
+                                <span>Deductible Applied</span>
+                                <span id="exp-sec-deductible">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row font-bold">
+                                <span>Payment</span>
+                                <span id="exp-sec-payment" class="text-green">₹0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-card">
+                            <h5 class="text-purple"><i class="fa-solid fa-chevron-right"></i> Patient Responsibility</h5>
+                            <div class="explanation-card-row">
+                                <span>Covered Liability</span>
+                                <span id="exp-pat-covered">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row">
+                                <span>Uncovered Amount</span>
+                                <span id="exp-pat-uncovered">₹0.00</span>
+                            </div>
+                            <div class="explanation-card-row font-bold">
+                                <span>Final Patient Cost</span>
+                                <span id="exp-pat-total" class="text-purple">₹0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="explanation-card">
+                            <h5><i class="fa-solid fa-clipboard-check text-green"></i> Validation & Verification Checklist</h5>
+                            <div class="checklist-item">
+                                <i class="fa-solid fa-circle-check text-green"></i>
+                                <span>Ledger Reconciled</span>
+                            </div>
+                            <div class="checklist-item">
+                                <i class="fa-solid fa-circle-check text-green"></i>
+                                <span>COB Adjudication Rules Passed</span>
+                            </div>
+                            <div class="checklist-item">
+                                <i class="fa-solid fa-circle-check text-green"></i>
+                                <span>Financial Totals Match Billed Amount</span>
+                            </div>
+                            <div class="explanation-card-row mt-2">
+                                <span>Retry Count</span>
+                                <span id="exp-val-retries" class="font-bold">0</span>
+                            </div>
+                            <div class="explanation-card-row">
+                                <span>Reflection Status</span>
+                                <span id="exp-val-reflection" class="text-green">Completed Successfully</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -49,6 +49,7 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
         
         if (currentPage === 'dashboard.html' && typeof loadClaims === 'function') {
             loadClaims();
+            loadHouseholdData();
         }
     } else {
         // User logged out
@@ -179,11 +180,15 @@ addSafeListener('claim-form', 'submit', async (e) => {
         return;
     }
 
-    const patientName = getEl('claim-patient-name').value;
+    const patientName = getEl('claim-patient-select').value;
     const claimType = getEl('claim-type').value;
     const totalAmount = parseFloat(getEl('claim-amount').value);
-    const primaryInsurer = getEl('claim-primary').value;
-    const secondaryInsurer = getEl('claim-secondary').value;
+    
+    const primaryDisplayVal = getEl('claim-primary-display').value;
+    const secondaryDisplayVal = getEl('claim-secondary-display').value;
+    
+    const primaryInsurer = primaryDisplayVal === "SecureHealth Premier" ? "Plan A" : "Plan B";
+    const secondaryInsurer = secondaryDisplayVal === "SecureHealth Premier" ? "Plan A" : "Plan B";
 
     const payload = {
         user_id: session.user.id,
@@ -298,6 +303,7 @@ addSafeListener('btn-process', 'click', async () => {
     btnProcess.disabled = true;
 
     try {
+        updateJourneyStep('step-upload');
         setLoadingStatus('Uploading document...', 'Storing file metadata in Supabase bucket...');
         const uploadForm = new FormData();
         uploadForm.append('claim_id', claimId);
@@ -310,6 +316,7 @@ addSafeListener('btn-process', 'click', async () => {
             throw new Error(`Upload failed: ${uploadRes.status} - ${errorText}`);
         }
 
+        updateJourneyStep('step-ocr');
         setLoadingStatus('Parsing claim contents...', 'Running OCR & structured extraction via Groq...');
         const parseForm = new FormData();
         parseForm.append('claim_id', claimId);
@@ -321,6 +328,7 @@ addSafeListener('btn-process', 'click', async () => {
             throw new Error(`Document parsing failed: ${parseRes.status} - ${errorText}`);
         }
 
+        updateJourneyStep('step-reasoning');
         setLoadingStatus('Assembling claim context...', 'Loading parsed parameters from database...');
         const { data: parsedRows, error: parsedErr } = await supabaseClient
             .from('parsed_claims')
@@ -355,6 +363,16 @@ addSafeListener('btn-process', 'click', async () => {
             network_status: networkStatus
         };
 
+        updateJourneyStep('step-eligibility');
+        await new Promise(r => setTimeout(r, 600));
+        updateJourneyStep('step-preauth');
+        await new Promise(r => setTimeout(r, 600));
+        updateJourneyStep('step-adjudication');
+        await new Promise(r => setTimeout(r, 600));
+        updateJourneyStep('step-cob');
+        await new Promise(r => setTimeout(r, 600));
+        updateJourneyStep('step-validation');
+
         const processRes = await fetch(`${BACKEND_URL}/process-claim`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -364,6 +382,7 @@ addSafeListener('btn-process', 'click', async () => {
         if (!processRes.ok) throw new Error('COB claims processing agent failed');
         const cobOutput = await processRes.json();
         
+        updateJourneyStep('step-breakdown');
         renderAdjudicationResults(cobOutput);
         showToast('Claim adjudicated successfully!', 'success');
 
@@ -394,25 +413,51 @@ function renderAdjudicationResults(output) {
     const patientResp = output.patient_responsibility || {};
     const validation = output.validation_status || {};
     const log = output.workflow_log || [];
+    const explanation = output.explanation || {};
+    const primExp = explanation.primary || {};
+    const secExp = explanation.secondary || {};
 
     const validationBadge = getEl('validation-badge');
-    const agentValidationBox = getEl('agent-validation-box');
-
     if (validation.is_valid) {
         validationBadge.textContent = 'Reconciliation Valid';
         validationBadge.className = 'badge valid';
-        agentValidationBox.innerHTML = '';
     } else {
         validationBadge.textContent = 'Ledger Discrepancy';
         validationBadge.className = 'badge invalid';
-        agentValidationBox.innerHTML = `
-            <div class="error-alert">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <div><strong>Validation Error:</strong> ${validation.reflection_notes || 'Reconciliation failed.'}</div>
-            </div>
-        `;
     }
 
+    // Populate Context Header
+    let primaryName = summary.primary_insurer === "Plan A" ? "SecureHealth Premier" : "FlexiCare Plus";
+    let secondaryName = summary.secondary_insurer === "Plan A" ? "SecureHealth Premier" : "FlexiCare Plus";
+    
+    getEl('info-patient-name').textContent = summary.patient_name || '-';
+    getEl('info-household-name').textContent = activeHousehold ? activeHousehold.household.household_name : 'Sharma Family';
+    getEl('info-diagnosis').textContent = summary.diagnosis || 'ACL Tear Surgery';
+    
+    // Find active claim type from selection
+    const uploadClaimSelect = getEl('upload-claim-select');
+    let selectedClaimType = 'Surgery';
+    if (uploadClaimSelect && uploadClaimSelect.selectedIndex >= 0) {
+        const claimText = uploadClaimSelect.options[uploadClaimSelect.selectedIndex].textContent;
+        if (claimText.includes('(physiotherapy)')) selectedClaimType = 'Physiotherapy';
+        else if (claimText.includes('(consultation)')) selectedClaimType = 'Consultation';
+        else if (claimText.includes('(diagnostic)')) selectedClaimType = 'Diagnostic';
+    }
+    getEl('info-claim-type').textContent = selectedClaimType;
+    getEl('info-billed-amount').textContent = formatCurrency(summary.total_billed);
+    getEl('info-primary-insurer').textContent = primaryName;
+    getEl('info-secondary-insurer').textContent = secondaryName;
+    getEl('info-claim-status').textContent = validation.is_valid ? 'Validated' : 'Discrepancy';
+    getEl('info-claim-status').className = validation.is_valid ? 'text-green font-bold' : 'text-orange font-bold';
+
+    // Populate Visual Flow
+    getEl('flow-hospital-bill').textContent = formatCurrency(summary.total_billed);
+    getEl('flow-primary-paid').textContent = formatCurrency(breakdown.primary_insurer_payment);
+    getEl('flow-remaining-balance').textContent = formatCurrency(summary.total_billed - breakdown.primary_insurer_payment);
+    getEl('flow-secondary-paid').textContent = formatCurrency(breakdown.secondary_insurer_payment);
+    getEl('flow-patient-liability').textContent = formatCurrency(patientResp.total_patient_cost);
+
+    // Populate Ledger Rows
     getEl('val-total-billed').textContent = formatCurrency(summary.total_billed);
     getEl('val-primary-paid').textContent = formatCurrency(breakdown.primary_insurer_payment);
     getEl('val-secondary-paid').textContent = formatCurrency(breakdown.secondary_insurer_payment);
@@ -420,19 +465,80 @@ function renderAdjudicationResults(output) {
     getEl('val-patient-covered').textContent = formatCurrency(patientResp.patient_liability_covered);
     getEl('val-patient-uncovered').textContent = formatCurrency(patientResp.uncovered_amount);
 
-    let primaryName = summary.primary_insurer === "Plan A" ? "SecureHealth Premier" : "FlexiCare Plus";
-    let secondaryName = summary.secondary_insurer === "Plan A" ? "SecureHealth Premier" : "FlexiCare Plus";
+    // Populate Dynamic Calculations Toggles
+    getEl('calc-details-primary').innerHTML = `
+        <div class="calc-details-row"><span>Billed Amount</span><span>${formatCurrency(primExp.total_billed || summary.total_billed)}</span></div>
+        <div class="calc-details-row"><span>Allowed Amount</span><span>${formatCurrency(primExp.allowed || summary.total_billed)}</span></div>
+        <div class="calc-details-row"><span>Deductible Applied</span><span>-${formatCurrency(primExp.deductible || 0.0)}</span></div>
+        <div class="calc-details-row"><span>Patient Coinsurance</span><span>-${formatCurrency(primExp.coinsurance || 0.0)}</span></div>
+        <div class="calc-details-row font-bold"><span>Final Primary Paid</span><span>${formatCurrency(primExp.paid || breakdown.primary_insurer_payment)}</span></div>
+    `;
 
-    let textExplanation = `• Billed Amount: ${formatCurrency(summary.total_billed)}\n` +
-                          `• Primary Adjudication (${primaryName}): Paid ${formatCurrency(breakdown.primary_insurer_payment)}\n` +
-                          `• Secondary Adjudication (${secondaryName}): Paid ${formatCurrency(breakdown.secondary_insurer_payment)}\n\n` +
-                          `• Patient Responsibility Breakdown:\n` +
-                          `   - Covered patient liability: ${formatCurrency(patientResp.patient_liability_covered)} (Deductible/Coinsurance)\n` +
-                          `   - Uncovered amount: ${formatCurrency(patientResp.uncovered_amount)}\n` +
-                          `   - Total patient cost: ${formatCurrency(patientResp.total_patient_cost)}`;
+    getEl('calc-details-secondary').innerHTML = `
+        <div class="calc-details-row"><span>Residual from Primary</span><span>${formatCurrency(secExp.residual_from_primary || 0.0)}</span></div>
+        <div class="calc-details-row"><span>Allowed Residual</span><span>${formatCurrency(secExp.allowed_residual || 0.0)}</span></div>
+        <div class="calc-details-row"><span>Deductible Applied</span><span>-${formatCurrency(secExp.deductible || 0.0)}</span></div>
+        <div class="calc-details-row"><span>Patient Coinsurance</span><span>-${formatCurrency(secExp.coinsurance || 0.0)}</span></div>
+        <div class="calc-details-row font-bold"><span>Final Secondary Paid</span><span>${formatCurrency(secExp.paid || breakdown.secondary_insurer_payment)}</span></div>
+    `;
 
-    getEl('agent-explanation-box').textContent = textExplanation;
+    // Populate Plan Details
+    const primKey = (summary.primary_insurer === "Plan A") ? "insurer1" : "insurer2";
+    const secKey = (summary.secondary_insurer === "Plan A") ? "insurer1" : "insurer2";
+    
+    const primRules = planRulesCache[primKey] || {};
+    const secRules = planRulesCache[secKey] || {};
+    
+    const primDedApplied = primExp.deductible || 0.0;
+    const secDedApplied = secExp.deductible || 0.0;
+    
+    const primDedRemaining = Math.max(0.0, (primRules.deductible || 0.0) - (primRules.deductible_met || 0.0) - primDedApplied);
+    const secDedRemaining = Math.max(0.0, (secRules.deductible || 0.0) - (secRules.deductible_met || 0.0) - secDedApplied);
+    
+    const primOopUsed = (primRules.oop_met || 0.0) + (patientResp.primary_oop_contribution || 0.0);
+    const secOopUsed = (secRules.oop_met || 0.0) + (patientResp.secondary_oop_contribution || 0.0);
+    
+    getEl('plan-details-primary-grid').innerHTML = `
+        <div class="detail-stat"><span>Plan Name</span><span>${primRules.plan_name || primaryName}</span></div>
+        <div class="detail-stat"><span>Network Status</span><span>IN</span></div>
+        <div class="detail-stat"><span>Total Deductible</span><span>${formatCurrency(primRules.deductible)}</span></div>
+        <div class="detail-stat"><span>Deductible Applied</span><span>${formatCurrency(primDedApplied)}</span></div>
+        <div class="detail-stat"><span>Deductible Remaining</span><span>${formatCurrency(primDedRemaining)}</span></div>
+        <div class="detail-stat"><span>Coinsurance Rate</span><span>${(primRules.coinsurance_rate * 100).toFixed(0)}% / ${(100 - primRules.coinsurance_rate * 100).toFixed(0)}%</span></div>
+        <div class="detail-stat"><span>Out-of-Pocket Max</span><span>${formatCurrency(primRules.oop_max)}</span></div>
+        <div class="detail-stat"><span>Out-of-Pocket Used</span><span>${formatCurrency(primOopUsed)}</span></div>
+    `;
 
+    getEl('plan-details-secondary-grid').innerHTML = `
+        <div class="detail-stat"><span>Plan Name</span><span>${secRules.plan_name || secondaryName}</span></div>
+        <div class="detail-stat"><span>Network Status</span><span>IN</span></div>
+        <div class="detail-stat"><span>Total Deductible</span><span>${formatCurrency(secRules.deductible)}</span></div>
+        <div class="detail-stat"><span>Deductible Applied</span><span>${formatCurrency(secDedApplied)}</span></div>
+        <div class="detail-stat"><span>Deductible Remaining</span><span>${formatCurrency(secDedRemaining)}</span></div>
+        <div class="detail-stat"><span>Coinsurance Rate</span><span>${(secRules.coinsurance_rate * 100).toFixed(0)}% / ${(100 - secRules.coinsurance_rate * 100).toFixed(0)}%</span></div>
+        <div class="detail-stat"><span>Out-of-Pocket Max</span><span>${formatCurrency(secRules.oop_max)}</span></div>
+        <div class="detail-stat"><span>Out-of-Pocket Used</span><span>${formatCurrency(secOopUsed)}</span></div>
+    `;
+
+    // Populate Structured Explanations
+    getEl('exp-prim-allowed').textContent = formatCurrency(primExp.allowed || summary.total_billed);
+    getEl('exp-prim-deductible').textContent = formatCurrency(primExp.deductible || 0.0);
+    getEl('exp-prim-coinsurance').textContent = formatCurrency(primExp.coinsurance || 0.0);
+    getEl('exp-prim-payment').textContent = formatCurrency(breakdown.primary_insurer_payment);
+
+    getEl('exp-sec-residual').textContent = formatCurrency(secExp.residual_from_primary || 0.0);
+    getEl('exp-sec-allowed').textContent = formatCurrency(secExp.allowed_residual || 0.0);
+    getEl('exp-sec-deductible').textContent = formatCurrency(secExp.deductible || 0.0);
+    getEl('exp-sec-payment').textContent = formatCurrency(breakdown.secondary_insurer_payment);
+
+    getEl('exp-pat-covered').textContent = formatCurrency(patientResp.patient_liability_covered);
+    getEl('exp-pat-uncovered').textContent = formatCurrency(patientResp.uncovered_amount);
+    getEl('exp-pat-total').textContent = formatCurrency(patientResp.total_patient_cost);
+
+    getEl('exp-val-retries').textContent = validation.retry_count || 0;
+    getEl('exp-val-reflection').textContent = validation.reflection_notes || 'Completed Successfully';
+
+    // Populate Timeline
     const executionTimeline = getEl('execution-timeline');
     executionTimeline.innerHTML = '';
     log.forEach((logMessage) => {
@@ -575,3 +681,105 @@ async function handleInsuranceCheck(endpoint, actionName) {
 
 addSafeListener('btn-check-eligibility', 'click', () => handleInsuranceCheck('eligibility', 'Eligibility'));
 addSafeListener('btn-check-preauth', 'click', () => handleInsuranceCheck('preauth', 'Pre-Authorization'));
+
+// ==========================================================================
+// 9. Household & Claim Journey revamping helper functions
+// ==========================================================================
+let activeHousehold = null;
+let planRulesCache = {};
+
+window.toggleElement = function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.toggle('hidden');
+    }
+};
+
+async function loadHouseholdData() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/households/default`);
+        if (!res.ok) throw new Error("Failed to load household details");
+        activeHousehold = await res.json();
+        
+        // Load plan rules cache
+        const resA = await fetch(`${BACKEND_URL}/insurance/insurer1`);
+        const resB = await fetch(`${BACKEND_URL}/insurance/insurer2`);
+        if (resA.ok) planRulesCache['insurer1'] = await resA.json();
+        if (resB.ok) planRulesCache['insurer2'] = await resB.json();
+        
+        renderHouseholdContext();
+        populatePatientSelect();
+    } catch (e) {
+        console.error(e);
+        showToast("Failed to initialize household information", "error");
+    }
+}
+
+function renderHouseholdContext() {
+    const titleDisp = getEl('household-title-display');
+    const membersGrid = getEl('household-members-grid');
+    if (!activeHousehold) return;
+    
+    if (titleDisp) {
+        titleDisp.textContent = `${activeHousehold.household.household_name} (Active Dual-Coverage Household)`;
+    }
+    
+    if (membersGrid) {
+        membersGrid.innerHTML = '';
+        activeHousehold.members.forEach(member => {
+            const card = document.createElement('div');
+            card.className = 'member-detail-card';
+            card.innerHTML = `
+                <h5><i class="fa-solid fa-user text-purple"></i> ${member.name}</h5>
+                <div class="policy-badge-row">
+                    <div class="policy-badge primary-role">
+                        Primary: <span>${member.primary}</span>
+                    </div>
+                    <div class="policy-badge dependent-role">
+                        Secondary: <span>${member.secondary}</span>
+                    </div>
+                </div>
+            `;
+            membersGrid.appendChild(card);
+        });
+    }
+}
+
+function populatePatientSelect() {
+    const select = getEl('claim-patient-select');
+    if (!select || !activeHousehold) return;
+    select.innerHTML = '<option value="" disabled selected>-- Select Member --</option>';
+    activeHousehold.members.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.name;
+        option.textContent = member.name;
+        select.appendChild(option);
+    });
+    
+    // When patient is changed, load primary & secondary read-only values
+    select.addEventListener('change', () => {
+        const selectedName = select.value;
+        const member = activeHousehold.members.find(m => m.name === selectedName);
+        if (member) {
+            getEl('claim-primary-display').value = member.primary;
+            getEl('claim-secondary-display').value = member.secondary;
+        }
+    });
+}
+
+function updateJourneyStep(activeStepId) {
+    const steps = ['step-upload', 'step-ocr', 'step-reasoning', 'step-eligibility', 'step-preauth', 'step-adjudication', 'step-cob', 'step-validation', 'step-breakdown'];
+    let activeFound = false;
+    steps.forEach(stepId => {
+        const el = getEl(stepId);
+        if (!el) return;
+        if (stepId === activeStepId) {
+            el.className = 'journey-step active';
+            activeFound = true;
+        } else if (!activeFound) {
+            el.className = 'journey-step completed';
+        } else {
+            el.className = 'journey-step';
+        }
+    });
+}
