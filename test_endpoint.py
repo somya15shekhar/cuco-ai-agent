@@ -15,8 +15,6 @@ print("==============================")
 print("TESTING /PARSE API ROUTE DIRECTLY")
 print("==============================\n")
 
-# Use a valid claim ID from the database for the foreign key reference
-claim_id = "d1deff21-750b-4346-b395-3529ea3da089"
 test_file_path = "backend/test_files/aarav_mri_report.pdf"
 
 if not os.path.exists(test_file_path):
@@ -24,6 +22,15 @@ if not os.path.exists(test_file_path):
     sys.exit(1)
 
 async def test_route():
+    print("Fetching a valid claim ID from Supabase 'claims' table...")
+    claims_res = supabase.table("claims").select("id").limit(1).execute()
+    if not claims_res.data:
+        print("No claims found in Supabase 'claims' table. Cannot test parse route.")
+        return
+    
+    claim_id = claims_res.data[0]["id"]
+    print(f"Using dynamic Claim ID: {claim_id}")
+
     print(f"Reading file: {test_file_path}")
     with open(test_file_path, "rb") as f:
         file_content = f.read()

@@ -9,48 +9,48 @@ AARAV SHARMA CLAIM OUTPUT:
     "secondary_insurer": "Plan A"
   },
   "payment_breakdown": {
-    "primary_insurer_payment": 318750.0,
-    "secondary_insurer_payment": 65000.0,
+    "primary_insurer_payment": 380000.0,
+    "secondary_insurer_payment": 33750.0,
     "uncovered_amount": 0.0
   },
   "patient_responsibility": {
-    "final_patient_responsibility": 66250.0,
-    "patient_liability_covered": 66250.0,
+    "final_patient_responsibility": 36250.0,
+    "patient_liability_covered": 36250.0,
     "uncovered_amount": 0.0,
-    "total_patient_cost": 66250.0,
-    "primary_deductible_applied": 25000.0,
-    "primary_coinsurance_patient": 106250.0,
-    "primary_oop_contribution": 131250.0,
-    "secondary_deductible_applied": 50000.0,
-    "secondary_coinsurance_patient": 16250.0,
-    "secondary_oop_contribution": 66250.0
+    "total_patient_cost": 36250.0,
+    "primary_deductible_applied": 0.0,
+    "primary_coinsurance_patient": 70000.0,
+    "primary_oop_contribution": 70000.0,
+    "secondary_deductible_applied": 25000.0,
+    "secondary_coinsurance_patient": 11250.0,
+    "secondary_oop_contribution": 36250.0
   },
   "validation_status": {
     "is_valid": true,
-    "retry_count": 1,
-    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-AARAV-001 has failed validation due to a ledger mismatch. The calculated breakdown shows a total of Primary Payment, Secondary Payment, Patient Responsibility, and Uncovered Amount as $450100.0, which does not match the Total Billed amount of $450000.0. The discrepancy is $100.0.\n\nThe issue lies in the fact that the sum of the calculated payments and responsibilities ($450100.0) exceeds the Total Billed amount ($450000.0) by $100.0. This indicates that there is an error in the COB calculation, resulting in an overpayment of $100.0.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error to ensure accurate calculations and reconciliation of the ledger. The retry process will help to identify and correct the mistake, providing a revised breakdown that accurately reflects the claim details and resolves the ledger mismatch."
+    "retry_count": 0,
+    "reflection_notes": null
   },
   "explanation": {
     "primary": {
       "total_billed": 450000.0,
       "allowed": 450000.0,
       "uncovered_by_sub_limit": 0.0,
-      "deductible": 25000.0,
-      "coinsurance": 106250.0,
+      "deductible": 0.0,
+      "coinsurance": 70000.0,
       "copay": 0.0,
-      "paid": 318750.0,
-      "patient_liability": 131250.0,
+      "paid": 380000.0,
+      "patient_liability": 70000.0,
       "cpt_breakdown": [
         {
           "cpt_code": "29888",
           "billed": 350000.0,
           "allowed": 350000.0,
           "uncovered_by_sub_limit": 0.0,
-          "deductible": 25000.0,
-          "coinsurance": 81250.0,
+          "deductible": 0.0,
+          "coinsurance": 70000.0,
           "copay": 0.0,
-          "insurer_payment": 243750.0,
-          "patient_liability": 106250.0
+          "insurer_payment": 280000.0,
+          "patient_liability": 70000.0
         },
         {
           "cpt_code": "29881",
@@ -58,81 +58,75 @@ AARAV SHARMA CLAIM OUTPUT:
           "allowed": 100000.0,
           "uncovered_by_sub_limit": 0.0,
           "deductible": 0.0,
-          "coinsurance": 25000.0,
+          "coinsurance": 0.0,
           "copay": 0.0,
-          "insurer_payment": 75000.0,
-          "patient_liability": 25000.0
+          "insurer_payment": 100000.0,
+          "patient_liability": 0.0
         }
       ]
     },
     "secondary": {
-      "residual_from_primary": 131250.0,
-      "allowed_residual": 131250.0,
+      "residual_from_primary": 70000.0,
+      "allowed_residual": 70000.0,
       "uncovered_by_sub_limit": 0.0,
-      "deductible": 50000.0,
-      "coinsurance": 16250.0,
+      "deductible": 25000.0,
+      "coinsurance": 11250.0,
       "copay": 0.0,
-      "paid": 65000.0,
-      "patient_liability": 66250.0,
+      "paid": 33750.0,
+      "patient_liability": 36250.0,
       "cpt_breakdown": [
         {
           "cpt_code": "29888",
-          "residual_from_primary": 106250.0,
-          "allowed_residual": 106250.0,
+          "residual_from_primary": 70000.0,
+          "allowed_residual": 70000.0,
           "uncovered_by_sub_limit": 0.0,
-          "deductible": 50000.0,
+          "deductible": 25000.0,
           "coinsurance": 11250.0,
           "copay": 0.0,
-          "insurer_payment": 45000.0,
-          "patient_liability": 61250.0
+          "insurer_payment": 33750.0,
+          "patient_liability": 36250.0
         },
         {
           "cpt_code": "29881",
-          "residual_from_primary": 25000.0,
-          "allowed_residual": 25000.0,
+          "residual_from_primary": 0.0,
+          "allowed_residual": 0.0,
           "uncovered_by_sub_limit": 0.0,
           "deductible": 0.0,
-          "coinsurance": 5000.0,
+          "coinsurance": 0.0,
           "copay": 0.0,
-          "insurer_payment": 20000.0,
-          "patient_liability": 5000.0
+          "insurer_payment": 0.0,
+          "patient_liability": 0.0
         }
       ]
     },
     "patient": {
-      "final_responsibility": 66250.0,
-      "patient_liability_covered": 66250.0,
+      "final_responsibility": 36250.0,
+      "patient_liability_covered": 36250.0,
       "uncovered_amount": 0.0,
-      "total_patient_cost": 66250.0
+      "total_patient_cost": 36250.0
     },
     "ledger": {
       "total_billed": 450000.0,
-      "primary_paid": 318750.0,
-      "secondary_paid": 65000.0,
-      "patient_responsibility": 66250.0,
+      "primary_paid": 380000.0,
+      "secondary_paid": 33750.0,
+      "patient_responsibility": 36250.0,
       "uncovered": 0.0
     }
   },
   "workflow_log": [
-    "IntakeNode: Initializing claims workflow from members.json.",
-    "IntakeNode: Loaded member Aarav Sharma (MBR001). Primary Insurer: Insurer2, Secondary Insurer: Insurer1.",
+    "IntakeNode: Initializing claims workflow from Supabase.",
+    "IntakeNode: Loaded member Aarav Sharma (3d3de919-4a69-4814-a183-3326d82b6d7a). Primary: SecureHealth Premier, Secondary: FlexiCare Plus.",
     "EligibilityNode: Checking CPT eligibility against primary plan.",
     "EligibilityNode: Eligibility verification complete. Eligible: True.",
     "PreAuthNode: Checking CPT preauthorization requirements.",
     "PreAuthNode: Preauth check complete. Requires Preauth: True.",
     "FetchPrimaryPlanNode: Fetching primary plan details.",
-    "FetchPrimaryPlanNode: Primary plan loaded: FlexiCare Plus",
+    "FetchPrimaryPlanNode: Primary plan loaded: SecureHealth Premier",
     "FetchSecondaryPlanNode: Fetching secondary plan details.",
-    "FetchSecondaryPlanNode: Secondary plan loaded: SecureHealth Premier",
+    "FetchSecondaryPlanNode: Secondary plan loaded: FlexiCare Plus",
     "COBNode: Running COB calculation engine (Attempt 0).",
-    "COBNode: Simulated mathematical discrepancy injected for testing reflection.",
     "ValidationNode: Validating financial ledger reconciliation.",
-    "ValidationNode: Completed validation. Found 1 error(s).",
-    "ReflectionNode: Analyzing validation failure with Groq LLM.",
-    "ReflectionNode: Groq diagnosis generated.",
-    "COBNode: Running COB calculation engine (Attempt 1).",
-    "ValidationNode: Validating financial ledger reconciliation.",
-    "ValidationNode: Completed validation. Found 0 error(s).",
+    "ValidationNode: Completed validation. 0 error(s).",
     "OutputNode: Claim processing completed successfully."
   ]
 }
@@ -150,37 +144,37 @@ PRIYA SHARMA CLAIM OUTPUT:
     "secondary_insurer": "Plan B"
   },
   "payment_breakdown": {
-    "primary_insurer_payment": 0.0,
+    "primary_insurer_payment": 8000.0,
     "secondary_insurer_payment": 0.0,
-    "uncovered_amount": 10000.0
+    "uncovered_amount": 2000.0
   },
   "patient_responsibility": {
     "final_patient_responsibility": 20000.0,
     "patient_liability_covered": 20000.0,
-    "uncovered_amount": 10000.0,
-    "total_patient_cost": 30000.0,
-    "primary_deductible_applied": 30000.0,
-    "primary_coinsurance_patient": 0.0,
-    "primary_oop_contribution": 30000.0,
+    "uncovered_amount": 2000.0,
+    "total_patient_cost": 22000.0,
+    "primary_deductible_applied": 20000.0,
+    "primary_coinsurance_patient": 2000.0,
+    "primary_oop_contribution": 22000.0,
     "secondary_deductible_applied": 20000.0,
     "secondary_coinsurance_patient": 0.0,
     "secondary_oop_contribution": 20000.0
   },
   "validation_status": {
     "is_valid": true,
-    "retry_count": 1,
-    "reflection_notes": "The Coordination of Benefits (COB) calculation for Claim ID CLM-PRIYA-001 has failed validation due to a ledger mismatch. The calculated breakdown shows that the sum of Primary Payment, Secondary Payment, Patient Responsibility, and Uncovered Amount is $30100.0, which does not match the Total Billed amount of $30000.0. This results in a discrepancy of $100.0.\n\nThe issue lies in the fact that the total calculated amounts ($30100.0) exceed the Total Billed amount ($30000.0) by $100.0. This discrepancy indicates that there is an error in the COB calculation, which is causing the ledger to not reconcile.\n\nTo resolve this issue, the COB engine must be re-run on retry without the error, ensuring that the calculations are accurate and the ledger reconciles correctly. This will help to identify and correct the underlying issue, providing a revised breakdown that matches the Total Billed amount."
+    "retry_count": 0,
+    "reflection_notes": null
   },
   "explanation": {
     "primary": {
       "total_billed": 30000.0,
       "allowed": 30000.0,
       "uncovered_by_sub_limit": 0.0,
-      "deductible": 30000.0,
-      "coinsurance": 0.0,
+      "deductible": 20000.0,
+      "coinsurance": 2000.0,
       "copay": 0.0,
-      "paid": 0.0,
-      "patient_liability": 30000.0,
+      "paid": 8000.0,
+      "patient_liability": 22000.0,
       "cpt_breakdown": [
         {
           "cpt_code": "97161",
@@ -200,23 +194,23 @@ PRIYA SHARMA CLAIM OUTPUT:
           "sub_limit": 30000.0,
           "allowed": 20000.0,
           "uncovered_by_sub_limit": 0.0,
-          "deductible": 20000.0,
-          "coinsurance": 0.0,
+          "deductible": 10000.0,
+          "coinsurance": 2000.0,
           "copay": 0.0,
-          "insurer_payment": 0.0,
-          "patient_liability": 20000.0
+          "insurer_payment": 8000.0,
+          "patient_liability": 12000.0
         }
       ]
     },
     "secondary": {
-      "residual_from_primary": 30000.0,
+      "residual_from_primary": 22000.0,
       "allowed_residual": 20000.0,
-      "uncovered_by_sub_limit": 10000.0,
+      "uncovered_by_sub_limit": 2000.0,
       "deductible": 20000.0,
       "coinsurance": 0.0,
       "copay": 0.0,
       "paid": 0.0,
-      "patient_liability": 30000.0,
+      "patient_liability": 22000.0,
       "cpt_breakdown": [
         {
           "cpt_code": "97161",
@@ -232,35 +226,35 @@ PRIYA SHARMA CLAIM OUTPUT:
         },
         {
           "cpt_code": "97110",
-          "residual_from_primary": 20000.0,
+          "residual_from_primary": 12000.0,
           "sub_limit": 20000.0,
           "allowed_residual": 10000.0,
-          "uncovered_by_sub_limit": 10000.0,
+          "uncovered_by_sub_limit": 2000.0,
           "deductible": 10000.0,
           "coinsurance": 0.0,
           "copay": 0.0,
           "insurer_payment": 0.0,
-          "patient_liability": 20000.0
+          "patient_liability": 12000.0
         }
       ]
     },
     "patient": {
       "final_responsibility": 20000.0,
       "patient_liability_covered": 20000.0,
-      "uncovered_amount": 10000.0,
-      "total_patient_cost": 30000.0
+      "uncovered_amount": 2000.0,
+      "total_patient_cost": 22000.0
     },
     "ledger": {
       "total_billed": 30000.0,
-      "primary_paid": 0.0,
+      "primary_paid": 8000.0,
       "secondary_paid": 0.0,
       "patient_responsibility": 20000.0,
-      "uncovered": 10000.0
+      "uncovered": 2000.0
     }
   },
   "workflow_log": [
-    "IntakeNode: Initializing claims workflow from members.json.",
-    "IntakeNode: Loaded member Priya Sharma (MBR002). Primary Insurer: Insurer1, Secondary Insurer: Insurer2.",
+    "IntakeNode: Initializing claims workflow from Supabase.",
+    "IntakeNode: Loaded member Priya Sharma (6cbd9825-b154-4942-8bf3-75b8f10a39ca). Primary: SecureHealth Premier, Secondary: FlexiCare Plus.",
     "EligibilityNode: Checking CPT eligibility against primary plan.",
     "EligibilityNode: Eligibility verification complete. Eligible: True.",
     "PreAuthNode: Checking CPT preauthorization requirements.",
@@ -270,14 +264,8 @@ PRIYA SHARMA CLAIM OUTPUT:
     "FetchSecondaryPlanNode: Fetching secondary plan details.",
     "FetchSecondaryPlanNode: Secondary plan loaded: FlexiCare Plus",
     "COBNode: Running COB calculation engine (Attempt 0).",
-    "COBNode: Simulated mathematical discrepancy injected for testing reflection.",
     "ValidationNode: Validating financial ledger reconciliation.",
-    "ValidationNode: Completed validation. Found 1 error(s).",
-    "ReflectionNode: Analyzing validation failure with Groq LLM.",
-    "ReflectionNode: Groq diagnosis generated.",
-    "COBNode: Running COB calculation engine (Attempt 1).",
-    "ValidationNode: Validating financial ledger reconciliation.",
-    "ValidationNode: Completed validation. Found 0 error(s).",
+    "ValidationNode: Completed validation. 0 error(s).",
     "OutputNode: Claim processing completed successfully."
   ]
 }

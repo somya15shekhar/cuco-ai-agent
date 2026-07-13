@@ -134,12 +134,13 @@ def adjudicate_primary(claim: ParsedClaim, plan: InsurancePlan, network_status: 
         if not is_covered:
             cpt_details.append(PrimaryCPTResult(
                 cpt_code=cpt_code, billed=billed, sub_limit=None,
-                allowed=0.0, uncovered_by_sub_limit=0.0,
+                allowed=0.0, uncovered_by_sub_limit=billed,
                 deductible_applied=0.0, coinsurance_patient=0.0,
                 copay_patient=0.0, insurer_payment=0.0,
                 patient_liability=billed))
             totals["billed"] += billed
             totals["pat"] += billed       # entire amount falls on patient as not-covered
+            totals["uncov_sub"] += billed
             continue
 
         # --- Sub-limit ---
@@ -246,12 +247,13 @@ def calculate_secondary_liability(
             cpt_details.append(SecondaryCPTResult(
                 cpt_code=cpt_code, residual_from_primary=residual,
                 sub_limit=None, allowed_residual=0.0,
-                uncovered_by_sub_limit=0.0,
+                uncovered_by_sub_limit=residual,
                 deductible_applied=0.0, coinsurance_patient=0.0,
                 copay_patient=0.0, insurer_payment=0.0,
                 patient_liability=residual))
             totals["residual"] += residual
             totals["pat"] += residual
+            totals["uncov_sub"] += residual
             continue
 
         # --- Sub-limit on residual ---
@@ -461,9 +463,9 @@ def calculate_cob(claim: ParsedClaim, primary_plan: InsurancePlan, secondary_pla
                                     secondary_res.coinsurance_patient + 
                                     secondary_res.copay_patient)
 
-    #    uncovered_amount = sum of sub-limit exclusions from BOTH layers
-    #    These are amounts that were billed but excluded by plan sub-limits at each stage.
-    total_uncovered = primary_res.uncovered_by_sub_limit + secondary_res.uncovered_by_sub_limit
+    #    uncovered_amount = True uncovered amount after BOTH layers
+    #    This is the remaining uncovered amount after the secondary insurer adjudicates the residual.
+    total_uncovered = secondary_res.uncovered_by_sub_limit
 
     # 5. OOP contribution (YTD accumulator increments — computed but NOT applied to plans here)
     oop_inc_p = primary_res.deductible_applied + primary_res.coinsurance_patient + primary_res.copay_patient
